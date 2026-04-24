@@ -3,9 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Điểm Danh Sinh Viên</title>
+    <title>Hệ Thống Điểm Danh Sinh Viên | UniCheck</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ====================================================
+           CSS NÂNG CẤP GIAO DIỆN ĐĂNG NHẬP (CÓ CHIỀU SÂU 3D)
+        ==================================================== */
+        .auth-form { display: none; }
+        .auth-form.active { display: block; animation: fadeIn 0.5s ease; }
+        
+        /* Nền Background sang trọng, chuyên nghiệp */
+        .auth-wrapper {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        /* Tạo 2 quả cầu sáng mờ (Glowing Orbs) để tạo chiều sâu */
+        .auth-wrapper::before {
+            content: ''; position: absolute; width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(59,130,246,0.3) 0%, rgba(0,0,0,0) 70%);
+            top: -150px; left: -150px; border-radius: 50%;
+        }
+        .auth-wrapper::after {
+            content: ''; position: absolute; width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(16,185,129,0.2) 0%, rgba(0,0,0,0) 70%);
+            bottom: -100px; right: -100px; border-radius: 50%;
+        }
+
+        /* Thẻ Form nổi lên với hiệu ứng Glassmorphism */
+        .auth-container {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.3) !important;
+            border-radius: 20px !important;
+            padding: 40px !important;
+            z-index: 10;
+            transform: translateY(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 100%;
+            max-width: 420px;
+        }
+        .auth-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.6), 0 0 30px rgba(59, 130, 246, 0.4) !important;
+        }
+        .auth-form h2 { color: #1e3a8a; font-weight: 800; font-size: 28px; margin-bottom: 25px; text-align: center; }
+        
+        .admin-link { text-align: center; margin-top: 25px; opacity: 0.3; font-size: 13px; cursor: pointer; transition: 0.3s; font-weight: bold;}
+        .admin-link:hover { opacity: 1; color: var(--danger-color); letter-spacing: 1px; }
+        
+        .student-centered { display: flex !important; flex-direction: column; align-items: center; width: 100%; padding-top: 30px; }
+        .student-centered .glass-card { width: 100%; max-width: 600px; margin-bottom: 30px; }
+        .admin-header { border-left: 5px solid var(--danger-color); padding-left: 15px; margin-bottom: 20px; }
+
+        /* ====================================================
+           CSS NÂNG CẤP SIDEBAR (MENU NHIỀU MỤC)
+        ==================================================== */
+        .menu-category {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #888;
+            font-weight: bold;
+            margin: 20px 0 5px 20px;
+            letter-spacing: 1px;
+        }
+        .nav-menu li { padding: 12px 20px; margin: 4px 15px; border-radius: 8px; transition: 0.2s; }
+        .nav-menu li i { width: 25px; text-align: center; margin-right: 8px; }
+        .nav-menu li:hover { background: rgba(0,123,255,0.1); transform: translateX(5px); }
+        .nav-menu li.active { background: var(--primary-color); color: white; box-shadow: 0 4px 10px rgba(0,123,255,0.3); }
+        .nav-menu li.active i { color: white; }
+    </style>
 </head>
 <body>
     <div id="toast-container"></div>
@@ -15,33 +83,34 @@
             
             <div class="auth-form login-form active" id="login-form">
                 <div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
-                        <a href="#" onclick="alert('Vui lòng liên hệ Admin (Phòng Đào tạo) hoặc email: admin@school.edu.vn để được cấp lại mật khẩu!'); return false;" style="font-size: 13px; color: var(--primary-color); text-decoration: none; font-weight: bold;">
-                            Quên mật khẩu?
-                        </a>
-                    </div>
-                <h2>Đăng Nhập</h2>
+                    <a href="#" onclick="alert('Vui lòng liên hệ Admin để được cấp lại mật khẩu!'); return false;" style="font-size: 13px; color: var(--primary-color); text-decoration: none; font-weight: bold;">
+                        Quên mật khẩu?
+                    </a>
+                </div>
+                <h2><i class="fa-solid fa-graduation-cap"></i> UniCheck</h2>
                 <form id="form-login-submit">
                     <div class="input-group">
                         <i class="fa-solid fa-envelope"></i>
-                        <input type="email" id="login-email" placeholder="Email" required>
+                        <input type="email" id="login-email" placeholder="Email đăng nhập" required>
                     </div>
                     <div class="input-group">
                         <i class="fa-solid fa-lock"></i>
                         <input type="password" id="login-password" placeholder="Mật khẩu" required>
                         <i class="fa-regular fa-eye toggle-password"></i>
                     </div>
-                    <button type="submit" class="btn btn-primary">Đăng Nhập</button>
-                    <p class="switch-form">Chưa có tài khoản? <span onclick="toggleAuth()">Đăng ký ngay</span></p>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 16px; padding: 12px; margin-top: 10px;">Đăng Nhập</button>
+                    <p class="switch-form" style="text-align: center; margin-top: 20px;">Chưa có tài khoản? <span onclick="toggleAuth('register')" style="font-weight: bold;">Đăng ký ngay</span></p>
                 </form>
+                <div class="admin-link" onclick="toggleAuth('admin')"><i class="fa-solid fa-shield-halved"></i> Truy Cập Quản Trị Hệ Thống</div>
             </div>
 
             <div class="auth-form register-form" id="register-form">
-                <h2>Đăng Ký</h2>
+                <h2>Tạo Tài Khoản</h2>
                 <form id="form-register-submit">
                     <div class="role-selector">
                         <label><input type="radio" name="role" value="student" checked> Sinh viên</label>
                         <label><input type="radio" name="role" value="teacher"> Giảng viên</label>
-                        </div>
+                    </div>
                     <div class="input-group">
                         <i class="fa-solid fa-envelope"></i>
                         <input type="email" id="reg-email" placeholder="Email" required>
@@ -56,8 +125,25 @@
                         <input type="password" id="reg-confirm-password" placeholder="Xác nhận mật khẩu" required>
                         <i class="fa-regular fa-eye toggle-password"></i>
                     </div>
-                    <button type="submit" class="btn btn-primary">Đăng Ký</button>
-                    <p class="switch-form">Đã có tài khoản? <span onclick="toggleAuth()">Đăng nhập</span></p>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Đăng Ký</button>
+                    <p class="switch-form" style="text-align: center; margin-top: 20px;"><span onclick="toggleAuth('login')"><i class="fa-solid fa-arrow-left"></i> Quay lại đăng nhập</span></p>
+                </form>
+            </div>
+
+            <div class="auth-form admin-login-form" id="admin-login-form">
+                <h2 style="color: var(--danger-color);"><i class="fa-solid fa-server"></i> Admin Portal</h2>
+                <form id="form-admin-login-submit">
+                    <div class="input-group">
+                        <i class="fa-solid fa-envelope" style="color: var(--danger-color);"></i>
+                        <input type="email" id="admin-login-email" placeholder="Email Quản Trị Viên" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock" style="color: var(--danger-color);"></i>
+                        <input type="password" id="admin-login-password" placeholder="Mật khẩu đặc quyền" required>
+                        <i class="fa-regular fa-eye toggle-password"></i>
+                    </div>
+                    <button type="submit" class="btn btn-danger" style="background: var(--danger-color); width: 100%; padding: 12px;">Xác Thực</button>
+                    <p class="switch-form" style="margin-top: 20px; text-align: center;"><span onclick="toggleAuth('login')"><i class="fa-solid fa-arrow-left"></i> Rời khỏi khu vực Admin</span></p>
                 </form>
             </div>
             
@@ -77,11 +163,23 @@
                     <span id="user-display-role" class="badge">Sinh viên</span>
                 </div>
             </div>
-            <ul class="nav-menu">
-                <li class="active"><i class="fa-solid fa-house"></i> Trang chủ</li>
-                <li><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</li>
-                <li><i class="fa-solid fa-gear"></i> Cài đặt</li>
-                <li><i class="fa-solid fa-credit-card"></i> Tài khoản</li>
+            
+            <ul class="nav-menu" style="padding: 0;">
+                <div class="menu-category">Quản Lý Lớp Học</div>
+                <li id="menu-home" data-target="teacher-panel" class="active"><i class="fa-solid fa-qrcode"></i> Điểm danh Real-time</li>
+                <li id="menu-students" data-target="students-panel"><i class="fa-solid fa-users"></i> Danh sách Sinh viên</li>
+                <li id="menu-history" data-target="history-panel"><i class="fa-solid fa-clock-rotate-left"></i> Tra cứu Lịch sử</li>
+                
+                <div class="menu-category">Thống Kê & Phân Tích</div>
+                <li id="menu-reports" data-target="reports-panel"><i class="fa-solid fa-chart-pie"></i> Báo cáo tổng hợp</li>
+
+                <div class="menu-category">Hệ Thống</div>
+                <li id="menu-settings" data-target="settings-panel"><i class="fa-solid fa-gear"></i> Cài đặt</li>
+                <li id="menu-billing" data-target="billing-panel"><i class="fa-solid fa-credit-card"></i> Gói cước (Billing)</li>
+                
+                <li id="menu-admin" data-target="admin-panel" style="display: none; color: var(--danger-color); font-weight: bold; border-top: 1px dashed #ccc; margin-top: 10px; padding-top: 15px;">
+                    <i class="fa-solid fa-crown"></i> Quản Trị Tối Cao
+                </li>
             </ul>
         </aside>
 
@@ -92,7 +190,7 @@
                     <input type="text" placeholder="Tìm kiếm...">
                 </div>
                 <div class="topbar-actions">
-                    <div class="clock" id="real-time-clock">00:00:00</div>
+                    <div class="clock" id="real-time-clock" style="font-weight: bold; color: var(--primary-color);">00:00:00</div>
                     <i class="fa-regular fa-bell action-icon"></i>
                     <button id="btn-logout" class="btn btn-danger"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
                 </div>
@@ -100,42 +198,29 @@
 
             <div id="teacher-panel" class="panel hidden">
                 <div class="panel-header-actions">
-                    <h3>Quản lý điểm danh</h3>
+                    <h3>Bảng điều khiển điểm danh</h3>
                     <div class="action-buttons">
-                        <button class="btn btn-primary btn-sm"><i class="fa-solid fa-rotate-right"></i> Làm mới</button>
-                        <button class="btn btn-success btn-sm"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
+                        <button id="btn-export-excel" class="btn btn-success btn-sm"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
                     </div>
                 </div>
 
                 <div class="dashboard-widgets">
                     <div class="widget-card">
                         <div class="widget-icon" style="background: #e3f2fd; color: #007bff;"><i class="fa-solid fa-users"></i></div>
-                        <div class="widget-info">
-                            <p>Tổng sĩ số (Dự kiến)</p>
-                            <h4>40</h4>
-                        </div>
+                        <div class="widget-info"><p>Tổng sĩ số</p><h4>40</h4></div>
                     </div>
                     <div class="widget-card">
                         <div class="widget-icon" style="background: #e8f5e9; color: #28a745;"><i class="fa-solid fa-user-check"></i></div>
-                        <div class="widget-info">
-                            <p>Đã điểm danh</p>
-                            <h4 id="stat-checked-in">0</h4>
-                        </div>
+                        <div class="widget-info"><p>Đã điểm danh</p><h4 id="stat-checked-in">0</h4></div>
                     </div>
                     <div class="widget-card">
                         <div class="widget-icon" style="background: #fff3cd; color: #ffc107;"><i class="fa-solid fa-chart-pie"></i></div>
-                        <div class="widget-info">
-                            <p>Tỷ lệ có mặt</p>
-                            <h4 id="stat-percent">0%</h4>
-                        </div>
+                        <div class="widget-info"><p>Tỷ lệ có mặt</p><h4 id="stat-percent">0%</h4></div>
                     </div>
                     <div class="widget-card control-card">
                         <div class="toggle-container">
                             <span style="font-weight: bold; margin-bottom: 10px; display: block;">Trạng thái lớp</span>
-                            <label class="switch">
-                                <input type="checkbox" id="class-toggle">
-                                <span class="slider round"></span>
-                            </label>
+                            <label class="switch"><input type="checkbox" id="class-toggle"><span class="slider round"></span></label>
                             <span id="class-status-text" class="status-closed" style="display:block; margin-top:5px;">Đã đóng</span>
                         </div>
                     </div>
@@ -143,126 +228,114 @@
 
                 <div class="table-container">
                     <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th>MSSV</th>
-                                <th>Họ Tên</th>
-                                <th>Lớp</th>
-                                <th>Thời gian (Real-time)</th>
-                                <th>Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody id="attendance-list">
-                            </tbody>
+                        <thead><tr><th>STT</th><th>MSSV</th><th>Họ Tên</th><th>Lớp</th><th>Thời gian</th><th>Trạng thái</th></tr></thead>
+                        <tbody id="attendance-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="students-panel" class="panel hidden">
+                <div class="panel-header-actions">
+                    <h3>Danh sách Sinh viên</h3>
+                    <button class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Thêm Sinh viên</button>
+                </div>
+                <div class="settings-card" style="text-align: center; padding: 50px;">
+                    <i class="fa-solid fa-users" style="font-size: 50px; color: #ccc; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666;">Tính năng Đang Phát Triển</h3>
+                    <p style="color: #888;">Module Quản lý danh sách sinh viên nội bộ sẽ sớm được cập nhật.</p>
+                </div>
+            </div>
+
+            <div id="reports-panel" class="panel hidden">
+                <div class="panel-header-actions">
+                    <h3>Báo cáo Thống kê Tổng hợp</h3>
+                </div>
+                <div class="settings-card" style="text-align: center; padding: 50px;">
+                    <i class="fa-solid fa-chart-line" style="font-size: 50px; color: #ccc; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666;">Biểu đồ Thống kê đang bảo trì</h3>
+                    <p style="color: #888;">Chúng tôi đang tích hợp thư viện biểu đồ Chart.js để vẽ phổ điểm danh. Vui lòng quay lại sau.</p>
+                </div>
+            </div>
+
+            <div id="admin-panel" class="panel hidden">
+                <div class="admin-header">
+                    <h2 style="color: var(--danger-color);">Bảng Điều Khiển Trung Tâm</h2>
+                    <p style="color: #666;">Khu vực dành riêng cho Quản trị viên. Chứa các thao tác tác động đến toàn bộ hệ thống.</p>
+                </div>
+                
+                <div class="settings-grid">
+                    <div class="settings-card danger-zone" style="border: 2px solid var(--danger-color);">
+                        <h4 class="settings-title" style="color: var(--danger-color);"><i class="fa-solid fa-skull-crossbones"></i> Hủy Diệt Dữ Liệu</h4>
+                        <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Xóa sạch toàn bộ dữ liệu điểm danh hiện tại của lớp học khỏi máy chủ. Hành động này không thể hoàn tác.</p>
+                        <button id="btn-reset-data" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Reset Toàn Bộ Lớp Học</button>
+                    </div>
+
+                    <div class="settings-card">
+                        <h4 class="settings-title"><i class="fa-solid fa-users-gear"></i> Thống Kê Hệ Thống</h4>
+                        <div class="setting-item" style="font-size: 18px;">
+                            <span>Tổng số tài khoản:</span>
+                            <strong id="admin-total-users" style="color: var(--primary-color);">Đang tải...</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 15px;"><i class="fa-solid fa-address-book"></i> Danh sách Tài Khoản Hệ Thống</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead><tr><th>STT</th><th>Email</th><th>Quyền (Role)</th></tr></thead>
+                        <tbody id="admin-users-list">
+                            <tr><td colspan="3" style="text-align:center;">Đang tải danh sách...</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
 
             <div id="history-panel" class="panel hidden">
-                <div class="panel-header-actions">
-                    <h3>Lịch sử điểm danh</h3>
-                </div>
-                
+                <div class="panel-header-actions"><h3>Tra cứu Lịch sử</h3></div>
                 <div class="settings-card" style="margin-bottom: 20px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
                     <div class="input-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
-                        <label style="font-size: 13px; font-weight: bold; color: var(--text-muted); margin-bottom: 5px; display: block;">Chọn ngày điểm danh</label>
+                        <label style="font-size: 13px; font-weight: bold; color: var(--text-muted); margin-bottom: 5px; display: block;">Chọn ngày</label>
                         <input type="date" id="filter-date" style="padding-left: 15px;">
                     </div>
                     <div class="input-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
-                        <label style="font-size: 13px; font-weight: bold; color: var(--text-muted); margin-bottom: 5px; display: block;">Mã lớp học</label>
+                        <label style="font-size: 13px; font-weight: bold; color: var(--text-muted); margin-bottom: 5px; display: block;">Mã lớp</label>
                         <input type="text" id="filter-class" placeholder="VD: DH25PM" style="padding-left: 15px;">
                     </div>
-                    <button id="btn-filter-history" class="btn btn-primary" style="height: 45px; width: auto; padding: 0 25px;"><i class="fa-solid fa-filter"></i> Lọc dữ liệu</button>
+                    <button id="btn-filter-history" class="btn btn-primary" style="height: 45px; width: auto; padding: 0 25px;"><i class="fa-solid fa-filter"></i> Lọc</button>
                 </div>
-
                 <div class="table-container">
                     <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th>MSSV</th>
-                                <th>Họ Tên</th>
-                                <th>Lớp</th>
-                                <th>Thời gian</th>
-                                <th>Trạng thái</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>STT</th><th>MSSV</th><th>Họ Tên</th><th>Lớp</th><th>Thời gian</th><th>Trạng thái</th></tr></thead>
                         <tbody id="history-list">
-                            <tr><td colspan="6" style="text-align:center; padding: 30px; color: #888;">Hãy chọn ngày hoặc mã lớp rồi bấm "Lọc dữ liệu" để xem lịch sử.</td></tr>
+                            <tr><td colspan="6" style="text-align:center; padding: 30px; color: #888;">Chọn ngày hoặc mã lớp để xem.</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
             <div id="settings-panel" class="panel hidden">
-                <div class="panel-header-actions">
-                    <h3>Cài đặt hệ thống</h3>
-                </div>
-                
+                <div class="panel-header-actions"><h3>Cài đặt Hệ thống</h3></div>
                 <div class="settings-grid">
-                    
                     <div class="settings-card">
                         <h4 class="settings-title"><i class="fa-solid fa-key"></i> Đổi mật khẩu</h4>
-                        <div class="input-group">
-                            <input type="password" id="setting-old-pass" placeholder="Mật khẩu cũ">
-                        </div>
-                        <div class="input-group">
-                            <input type="password" id="setting-new-pass" placeholder="Mật khẩu mới">
-                        </div>
+                        <div class="input-group"><input type="password" id="setting-old-pass" placeholder="Mật khẩu cũ"></div>
+                        <div class="input-group"><input type="password" id="setting-new-pass" placeholder="Mật khẩu mới"></div>
                         <button id="btn-change-pass" class="btn btn-primary">Cập nhật mật khẩu</button>
                     </div>
-
                     <div class="settings-card">
                         <h4 class="settings-title"><i class="fa-solid fa-sliders"></i> Tùy chọn điểm danh</h4>
-                        <div class="setting-item">
-                            <span>Cho phép sinh viên điểm danh muộn</span>
-                            <label class="switch"><input type="checkbox" checked><span class="slider round"></span></label>
-                        </div>
-                        <div class="setting-item">
-                            <span>Tự động đóng lớp sau 15 phút</span>
-                            <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
-                        </div>
-                    </div>
-
-                    <div class="settings-card danger-zone" id="admin-danger-zone">
-                        <h4 class="settings-title" style="color: var(--danger-color);"><i class="fa-solid fa-triangle-exclamation"></i> Vùng nguy hiểm (Quyền Admin)</h4>
-                        <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Xóa toàn bộ dữ liệu điểm danh hiện tại của lớp. Hành động này không thể hoàn tác.</p>
-                        <button id="btn-reset-data" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Reset lớp học</button>
+                        <div class="setting-item"><span>Cho phép sinh viên điểm danh muộn</span><label class="switch"><input type="checkbox" checked><span class="slider round"></span></label></div>
                     </div>
                 </div>
             </div>
 
             <div id="billing-panel" class="panel hidden">
-                <div class="panel-header-actions">
-                    <h3>Quản lý Tài khoản & Gói cước</h3>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 20px; align-items: center;">
-                    <div class="settings-card" style="text-align: center; border-top: 5px solid #888;">
-                        <h4 style="color: #666;">Gói Cơ Bản (Free)</h4>
-                        <h2 style="font-size: 36px; margin: 20px 0; color: #333;">0đ <span style="font-size: 16px; color: #888;">/tháng</span></h2>
-                        <ul style="list-style: none; padding: 0; text-align: left; margin-bottom: 25px; color: #555; line-height: 2;">
-                            <li><i class="fa-solid fa-check" style="color: #888; width: 25px;"></i> Tối đa 1 lớp học</li>
-                            <li><i class="fa-solid fa-check" style="color: #888; width: 25px;"></i> 40 sinh viên / lớp</li>
-                            <li><i class="fa-solid fa-check" style="color: #888; width: 25px;"></i> Lưu lịch sử 7 ngày</li>
-                            <li style="color: #ccc;"><i class="fa-solid fa-xmark" style="width: 25px;"></i> Không hỗ trợ xuất Excel</li>
-                        </ul>
-                        <button class="btn" style="width: 100%; background: #eee; color: #666; font-weight: bold; cursor: not-allowed;" disabled>Đang sử dụng</button>
-                    </div>
-
-                    <div class="settings-card" style="text-align: center; border-top: 5px solid var(--primary-color); transform: scale(1.05); box-shadow: 0 10px 30px rgba(0,123,255,0.15); position: relative;">
-                        <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--primary-color); color: white; padding: 5px 20px; border-radius: 20px; font-size: 12px; font-weight: bold; letter-spacing: 1px;">PHỔ BIẾN NHẤT</div>
+                <div class="panel-header-actions"><h3>Quản lý Gói cước</h3></div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 20px;">
+                    <div class="settings-card" style="text-align: center; border-top: 5px solid var(--primary-color);">
                         <h4 style="color: var(--primary-color); margin-top: 15px;">Gói Chuyên Nghiệp</h4>
                         <h2 style="font-size: 36px; margin: 20px 0; color: var(--primary-color);">99.000đ <span style="font-size: 16px; color: #888;">/tháng</span></h2>
-                        <ul style="list-style: none; padding: 0; text-align: left; margin-bottom: 25px; color: #333; line-height: 2; font-weight: 500;">
-                            <li><i class="fa-solid fa-check" style="color: var(--success-color); width: 25px;"></i> Không giới hạn lớp học</li>
-                            <li><i class="fa-solid fa-check" style="color: var(--success-color); width: 25px;"></i> Không giới hạn sinh viên</li>
-                            <li><i class="fa-solid fa-check" style="color: var(--success-color); width: 25px;"></i> Lưu lịch sử vĩnh viễn</li>
-                            <li><i class="fa-solid fa-check" style="color: var(--success-color); width: 25px;"></i> Xuất báo cáo ra file Excel</li>
-                            <li><i class="fa-solid fa-check" style="color: var(--success-color); width: 25px;"></i> Hỗ trợ kỹ thuật 24/7</li>
-                        </ul>
-                        <button class="btn btn-primary" style="width: 100%; font-size: 16px; box-shadow: 0 4px 15px rgba(0,123,255,0.3);" onclick="alert('Đang kết nối cổng thanh toán MoMo / VNPay... Vui lòng chuyển khoản trực tiếp cho Dev =)))')">Nâng Cấp Ngay</button>
+                        <button class="btn btn-primary" style="width: 100%;" onclick="alert('Vui lòng chuyển khoản trực tiếp cho Dev =)))')">Nâng Cấp Ngay</button>
                     </div>
                 </div>
             </div>
@@ -271,43 +344,33 @@
                 <div class="glass-card student-attendance-card">
                     <h3><i class="fa-solid fa-qrcode"></i> Điểm danh khóa học</h3>
                     <form id="form-attendance">
-                        <div class="input-group">
-                            <input type="text" id="att-class-code" placeholder="Nhập mã lớp" required>
-                        </div>
-                        <div class="input-group">
-                            <input type="text" id="att-mssv" placeholder="Nhập Mã số sinh viên" required>
-                        </div>
-                        <div class="input-group">
-                            <input type="text" id="att-name" placeholder="Nhập Họ và Tên" required>
-                        </div>
-                        <button type="submit" class="btn btn-success btn-block">Xác nhận điểm danh</button>
+                        <div class="input-group"><input type="text" id="att-class-code" placeholder="Nhập mã lớp" required></div>
+                        <div class="input-group"><input type="text" id="att-mssv" placeholder="Nhập Mã số sinh viên" required></div>
+                        <div class="input-group"><input type="text" id="att-name" placeholder="Nhập Họ và Tên" required></div>
+                        <button type="submit" class="btn btn-success btn-block" style="padding: 15px; font-size: 16px;">Xác nhận điểm danh</button>
                     </form>
                 </div>
-
-                <div class="glass-card student-attendance-card" style="margin-top: 30px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
+                <div class="glass-card student-attendance-card">
                     <h3><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử của tôi</h3>
                     <div class="input-group" style="display: flex; gap: 10px;">
-                        <input type="text" id="search-my-mssv" placeholder="Nhập MSSV của bạn để tra cứu..." style="flex: 1; padding-left: 15px;">
+                        <input type="text" id="search-my-mssv" placeholder="Nhập MSSV..." style="flex: 1; padding-left: 15px;">
                         <button id="btn-search-my-history" type="button" class="btn btn-primary" style="width: auto; padding: 0 20px;">Tra cứu</button>
                     </div>
-                    
                     <div class="table-container" style="margin-top: 20px;">
                         <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th>Lớp</th>
-                                    <th>Thời gian</th>
-                                    <th>Trạng thái</th>
-                                </tr>
-                            </thead>
-                            <tbody id="my-history-list">
-                                <tr><td colspan="4" style="text-align:center; color: #888;">Nhập MSSV để xem danh sách điểm danh</td></tr>
-                            </tbody>
+                            <thead><tr><th>STT</th><th>Lớp</th><th>Thời gian</th><th>Trạng thái</th></tr></thead>
+                            <tbody id="my-history-list"><tr><td colspan="4" style="text-align:center; color: #888;">Nhập MSSV để xem</td></tr></tbody>
                         </table>
                     </div>
                 </div>
+                <div class="glass-card student-attendance-card">
+                    <h3><i class="fa-solid fa-key"></i> Đổi mật khẩu cá nhân</h3>
+                    <div class="input-group"><input type="password" id="student-old-pass" placeholder="Mật khẩu hiện tại" required></div>
+                    <div class="input-group"><input type="password" id="student-new-pass" placeholder="Mật khẩu mới" required></div>
+                    <button id="btn-student-change-pass" type="button" class="btn btn-primary" style="width: 100%;">Cập nhật mật khẩu</button>
+                </div>
             </div>
+
         </main>
     </section>
 
