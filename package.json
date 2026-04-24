@@ -1,0 +1,13 @@
+{
+  "name": "diemdanhsinhvien",
+  "version": "1.0.0",
+  "description": "Hệ thống điểm danh sinh viên Firebase",
+  "main": "index.html",
+  "scripts": {
+    "start": "live-server"
+  },
+  "author": "Bạn",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {}
+}

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Điểm Danh Sinh Viên</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <section id="auth-section" class="auth-wrapper">
+        <div class="glass-card auth-container" id="auth-container">
+            
+            <div class="auth-form login-form active" id="login-form">
+                <div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
+                        <a href="#" onclick="alert('Vui lòng liên hệ Admin (Phòng Đào tạo) hoặc email: admin@school.edu.vn để được cấp lại mật khẩu!'); return false;" style="font-size: 13px; color: var(--primary-color); text-decoration: none; font-weight: bold;">
+                            Quên mật khẩu?
+                        </a>
+                    </div>
+                <h2>Đăng Nhập</h2>
+                <form id="form-login-submit">
+                    <div class="input-group">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="login-email" placeholder="Email" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="login-password" placeholder="Mật khẩu" required>
+                        <i class="fa-regular fa-eye toggle-password"></i>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Đăng Nhập</button>
+                    <p class="switch-form">Chưa có tài khoản? <span onclick="toggleAuth()">Đăng ký ngay</span></p>
+                </form>
+            </div>
+
+            <div class="auth-form register-form" id="register-form">
+                <h2>Đăng Ký</h2>
+                <form id="form-register-submit">
+                    <div class="role-selector">
+                        <label><input type="radio" name="role" value="student" checked> Sinh viên</label>
+                        <label><input type="radio" name="role" value="teacher"> Giảng viên</label>
+                        </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="reg-email" placeholder="Email" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="reg-password" placeholder="Mật khẩu" required>
+                        <i class="fa-regular fa-eye toggle-password"></i>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="reg-confirm-password" placeholder="Xác nhận mật khẩu" required>
+                        <i class="fa-regular fa-eye toggle-password"></i>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Đăng Ký</button>
+                    <p class="switch-form">Đã có tài khoản? <span onclick="toggleAuth()">Đăng nhập</span></p>
+                </form>
+            </div>
+            
+        </div>
+    </section>
+
+    <section id="dashboard-section" class="dashboard-wrapper hidden">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-graduation-cap logo-icon"></i>
+                <h2>UniCheck</h2>
+            </div>
+            <div class="user-info">
+                <img src="https://ui-avatars.com/api/?name=User&background=random" alt="Avatar" class="avatar">
+                <div>
+                    <h4 id="user-display-email">user@email.com</h4>
+                    <span id="user-display-role" class="badge">Sinh viên</span>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li class="active"><i class="fa-solid fa-house"></i> Trang chủ</li>
+                <li><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</li>
+                <li><i class="fa-solid fa-gear"></i> Cài đặt</li>
+                <li><i class="fa-solid fa-credit-card"></i> Tài khoản</li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Tìm kiếm...">
+                </div>
+                <div class="topbar-actions">
+                    <div class="clock" id="real-time-clock">00:00:00</div>
+                    <i class="fa-regular fa-bell action-icon"></i>
+                    <button id="btn-logout" class="btn btn-danger"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
+                </div>
+            </header>
+
+            <div id="teacher-panel" class="panel hidden">
+                <div class="panel-header-actions">
+                    <h3>Quản lý điểm danh</h3>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary btn-sm"><i class="fa-solid fa-rotate-right"></i> Làm mới</button>
+                        <button class="btn btn-success btn-sm"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
+                    </div>
+                </div>
+
+                <div class="dashboard-widgets">
+                    <div class="widget-card">
+                        <div class="widget-icon" style="background: #e3f2fd; color: #007bff;"><i class="fa-solid fa-users"></i></div>
+                        <div class="widget-info">
+                            <p>Tổng sĩ số (Dự kiến)</p>
+                            <h4>40</h4>
+                        </div>
+                    </div>
+                    <div class="widget-card">
+                        <div class="widget-icon" style="background: #e8f5e9; color: #28a745;"><i class="fa-solid fa-user-check"></i></div>
+                        <div class="widget-info">
+                            <p>Đã điểm danh</p>
+                            <h4 id="stat-checked-in">0</h4>
+                        </div>
+                    </div>
+                    <div class="widget-card">
+                        <div class="widget-icon" style="background: #fff3cd; color: #ffc107;"><i class="fa-solid fa-chart-pie"></i></div>
+                        <div class="widget-info">
+                            <p>Tỷ lệ có mặt</p>
+                            <h4 id="stat-percent">0%</h4>
+                        </div>
+                    </div>
+                    <div class="widget-card control-card">
+                        <div class="toggle-container">
+                            <span style="font-weight: bold; margin-bottom: 10px; display: block;">Trạng thái lớp</span>
+                            <label class="switch">
+                                <input type="checkbox" id="class-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                            <span id="class-status-text" class="status-closed" style="display:block; margin-top:5px;">Đã đóng</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>MSSV</th>
+                                <th>Họ Tên</th>
+                                <th>Lớp</th>
+                                <th>Thời gian (Real-time)</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendance-list">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="history-panel" class="panel hidden">
+                <div class="panel-header-actions">
+                    <h3>Lịch sử điểm danh</h3>
+                </div>
+                
+                <div class="settings-card" style="margin-bottom: 20px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                    <div class="input-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
+                        <label style="font-size: 13px; font-weight: bold; color: var(--text-muted); margin-bottom: 5px; display: block;">Chọn ngày điểm danh</label>
+                        <input type="date" id="filter-date" style="padding-left: 15px;">
+                    </div>
+                    <div class="input-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
+                        <label style="font-size: 13px; font-weight: bold; color: var(--text-muted); margin-bottom: 5px; display: block;">Mã lớp học</label>
+                        <input type="text" id="filter-class" placeholder="VD: DH25PM" style="padding-left: 15px;">
+                    </div>
+                    <button id="btn-filter-history" class="btn btn-primary" style="height: 45px; width: auto; padding: 0 25px;"><i class="fa-solid fa-filter"></i> Lọc dữ liệu</button>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>MSSV</th>
+                                <th>Họ Tên</th>
+                                <th>Lớp</th>
+                                <th>Thời gian</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-list">
+                            <tr><td colspan="6" style="text-align:center; padding: 30px; color: #888;">Hãy chọn ngày hoặc mã lớp rồi bấm "Lọc dữ liệu" để xem lịch sử.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="settings-panel" class="panel hidden">
+                <div class="panel-header-actions">
+                    <h3>Cài đặt hệ thống</h3>
+                </div>
+                
+                <div class="settings-grid">
+                    
+                    <div class="settings-card">
+                        <h4 class="settings-title"><i class="fa-solid fa-key"></i> Đổi mật khẩu</h4>
+                        <div class="input-group">
+                            <input type="password" id="setting-old-pass" placeholder="Mật khẩu cũ">
+                        </div>
+                        <div class="input-group">
+                            <input type="password" id="setting-new-pass" placeholder="Mật khẩu mới">
+                        </div>
+                        <button id="btn-change-pass" class="btn btn-primary">Cập nhật mật khẩu</button>
+                    </div>
+
+                    <div class="settings-card">
+                        <h4 class="settings-title"><i class="fa-solid fa-sliders"></i> Tùy chọn điểm danh</h4>
+                        <div class="setting-item">
+                            <span>Cho phép sinh viên điểm danh muộn</span>
+                            <label class="switch"><input type="checkbox" checked><span class="slider round"></span></label>
+                        </div>
+                        <div class="setting-item">
+                            <span>Tự động đóng lớp sau 15 phút</span>
+                            <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
+                        </div>
+                    </div>
+
+                    <div class="settings-card danger-zone" id="admin-danger-zone">
+                        <h4 class="settings-title" style="color: var(--danger-color);"><i class="fa-solid fa-triangle-exclamation"></i> Vùng nguy hiểm (Quyền Admin)</h4>
+                        <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Xóa toàn bộ dữ liệu điểm danh hiện tại của lớp. Hành động này không thể hoàn tác.</p>
+                        <button id="btn-reset-data" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Reset lớp học</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="billing-panel" class="panel hidden">
+                <div class="panel-header-actions">
+                    <h3>Quản lý Tài khoản & Gói cước</h3>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 20px; align-items: center;">
+                    <div class="settings-card" style="text-align: center; border-top: 5px solid #888;">
+                        <h4 style="color: #666;">Gói Cơ Bản (Free)</h4>
+                        <h2 style="font-size: 36px; margin: 20px 0; color: #333;">0đ <span style="font-size: 16px; color: #888;">/tháng</span></h2>
+                        <ul style="list-style: none; padding: 0; text-align: left; margin-bottom: 25px; color: #555; line-height: 2;">
+                            <li><i class="fa-solid fa-check" style="color: #888; width: 25px;"></i> Tối đa 1 lớp học</li>
+                            <li><i class="fa-solid fa-check" style="color: #888; width: 25px;"></i> 40 sinh viên / lớp</li>
+                            <li><i class="fa-solid fa-check" style="color: #888; width: 25px;"></i> Lưu lịch sử 7 ngày</li>
+                            <li style="color: #ccc;"><i class="fa-solid fa-xmark" style="width: 25px;"></i> Không hỗ trợ xuất Excel</li>
+                        </ul>
+                        <button class="btn" style="width: 100%; background: #eee; color: #666; font-weight: bold; cursor: not-allowed;" disabled>Đang sử dụng</button>
+                    </div>
+
+                    <div class="settings-card" style="text-align: center; border-top: 5px solid var(--primary-color); transform: scale(1.05); box-shadow: 0 10px 30px rgba(0,123,255,0.15); position: relative;">
+                        <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--primary-color); color: white; padding: 5px 20px; border-radius: 20px; font-size: 12px; font-weight: bold; letter-spacing: 1px;">PHỔ BIẾN NHẤT</div>
+                        <h4 style="color: var(--primary-color); margin-top: 15px;">Gói Chuyên Nghiệp</h4>
+                        <h2 style="font-size: 36px; margin: 20px 0; color: var(--primary-color);">99.000đ <span style="font-size: 16px; color: #888;">/tháng</span></h2>
+                        <ul style="list-style: none; padding: 0; text-align: left; margin-bottom: 25px; color: #333; line-height: 2; font-weight: 500;">
+                            <li><i class="fa-solid fa-check" style="color: var(--success-color); width: 25px;"></i> Không giới hạn lớp học</li>
+                            <li><i class="fa-solid fa-check" style="color: var(--success-color); width: 25px;"></i> Không giới hạn sinh viên</li>
+                            <li><i class="fa-solid fa-check" style="color: var(--success-color); width: 25px;"></i> Lưu lịch sử vĩnh viễn</li>
+                            <li><i class="fa-solid fa-check" style="color: var(--success-color); width: 25px;"></i> Xuất báo cáo ra file Excel</li>
+                            <li><i class="fa-solid fa-check" style="color: var(--success-color); width: 25px;"></i> Hỗ trợ kỹ thuật 24/7</li>
+                        </ul>
+                        <button class="btn btn-primary" style="width: 100%; font-size: 16px; box-shadow: 0 4px 15px rgba(0,123,255,0.3);" onclick="alert('Đang kết nối cổng thanh toán MoMo / VNPay... Vui lòng chuyển khoản trực tiếp cho Dev =)))')">Nâng Cấp Ngay</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="student-panel" class="panel hidden">
+                <div class="glass-card student-attendance-card">
+                    <h3><i class="fa-solid fa-qrcode"></i> Điểm danh khóa học</h3>
+                    <form id="form-attendance">
+                        <div class="input-group">
+                            <input type="text" id="att-class-code" placeholder="Nhập mã lớp" required>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" id="att-mssv" placeholder="Nhập Mã số sinh viên" required>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" id="att-name" placeholder="Nhập Họ và Tên" required>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block">Xác nhận điểm danh</button>
+                    </form>
+                </div>
+
+                <div class="glass-card student-attendance-card" style="margin-top: 30px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử của tôi</h3>
+                    <div class="input-group" style="display: flex; gap: 10px;">
+                        <input type="text" id="search-my-mssv" placeholder="Nhập MSSV của bạn để tra cứu..." style="flex: 1; padding-left: 15px;">
+                        <button id="btn-search-my-history" type="button" class="btn btn-primary" style="width: auto; padding: 0 20px;">Tra cứu</button>
+                    </div>
+                    
+                    <div class="table-container" style="margin-top: 20px;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Lớp</th>
+                                    <th>Thời gian</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="my-history-list">
+                                <tr><td colspan="4" style="text-align:center; color: #888;">Nhập MSSV để xem danh sách điểm danh</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </section>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>
