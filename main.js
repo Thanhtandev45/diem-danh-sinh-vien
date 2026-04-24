@@ -20,7 +20,7 @@ const logsCollection = collection(db, "system_logs"); // Bảng lưu Logs mới
 // TỌA ĐỘ ĐẠI HỌC AN GIANG
 const SCHOOL_LAT = 10.371727869842815; 
 const SCHOOL_LON = 105.43255463334839; 
-const MAX_DISTANCE = 150; 
+const MAX_DISTANCE = 10000;
 
 function showToast(message, type = 'success') {
     const toastContainer = document.getElementById('toast-container');
