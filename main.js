@@ -221,8 +221,8 @@ function initTeacherRealtime(lecturerId) {
         };
     }
     
-    // Tải danh sách điểm danh (Chỉ hiện của mình)
-    const q = query(attendanceCollection, where("lecturerId", "==", lecturerId), orderBy("timestamp", "desc"));
+    // Tải danh sách điểm danh (Chỉ hiện của mình - Fix lỗi Firebase Index)
+    const q = query(attendanceCollection, where("lecturerId", "==", lecturerId));
     if(attendanceUnsubscribe) attendanceUnsubscribe();
     attendanceUnsubscribe = onSnapshot(q, (snapshot) => {
         const tbody = document.getElementById('attendance-list'); if(!tbody) return; tbody.innerHTML = '';
@@ -234,14 +234,18 @@ function initTeacherRealtime(lecturerId) {
             return;
         }
 
-        snapshot.forEach((docSnap) => {
-            const item = docSnap.data();
+        // Lấy data và tự sắp xếp mới nhất lên đầu bằng JS (Tránh lỗi Firebase)
+        let docsArray = [];
+        snapshot.forEach(doc => docsArray.push(doc.data()));
+        docsArray.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
+
+        let index = 1;
+        docsArray.forEach((item) => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${tbody.children.length + 1}</td><td style="font-weight:800;">${item.mssv}</td><td>${item.name}</td><td>${item.classCode}</td><td style="color:#64748b;">${item.time}</td><td><span class="badge" style="background:#10b981; color:white;">Hợp lệ</span></td>`;
+            tr.innerHTML = `<td>${index++}</td><td style="font-weight:800;">${item.mssv}</td><td>${item.name}</td><td>${item.classCode}</td><td style="color:#64748b;">${item.time}</td><td><span class="badge" style="background:#10b981; color:white;">Hợp lệ</span></td>`;
             tbody.appendChild(tr);
         });
     });
-}
 // SINH VIÊN ĐIỂM DANH
 document.getElementById('form-attendance').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -354,11 +358,13 @@ async function loadStudentsList() {
         const snap = await getDocs(query(usersCollection, where("role", "==", "student"))); 
         const tbody = document.getElementById('students-roster-list'); 
         if(!tbody) return; tbody.innerHTML = ''; 
-        if(snap.empty) return tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Chưa có sinh viên</td></tr>'; 
+        if(snap.empty) return tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;">Hệ thống chưa có sinh viên</td></tr>'; 
+        
         let index = 1; 
         snap.forEach(docSnap => { 
             const tr = document.createElement('tr'); 
-            tr.innerHTML = `<td>${index++}</td><td style="font-weight:600;">${docSnap.data().email}</td><td><span class="badge" style="background:#64748b; color:white;">Student</span></td>`; 
+            // Đã xóa cột Phân quyền, chỉ giữ STT và Email
+            tr.innerHTML = `<td>${index++}</td><td style="font-weight:600; color:var(--text-main);">${docSnap.data().email}</td>`; 
             tbody.appendChild(tr); 
         }); 
     } catch(e) {}
@@ -425,3 +431,4 @@ const btnFilterHistory = document.getElementById('btn-filter-history');
 if(btnFilterHistory) { btnFilterHistory.addEventListener('click', async () => { const dateInput = document.getElementById('filter-date').value; const classInput = document.getElementById('filter-class').value.trim().toLowerCase(); let searchDate = dateInput ? `${parseInt(dateInput.split('-')[2])}/${parseInt(dateInput.split('-')[1])}/${dateInput.split('-')[0]}` : ""; const tbody = document.getElementById('history-list'); tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Đang tải...</td></tr>'; try { const querySnapshot = await getDocs(collection(db, "attendance")); tbody.innerHTML = ''; let index = 1, hasData = false; querySnapshot.forEach((doc) => { const item = doc.data(); if ((!searchDate || item.time.includes(searchDate)) && (!classInput || item.classCode.toLowerCase().includes(classInput))) { hasData = true; const tr = document.createElement('tr'); tr.innerHTML = `<td>${index++}</td><td style="font-weight:800;">${item.mssv}</td><td style="font-weight:500;">${item.name}</td><td>${item.classCode}</td><td style="color:#64748b;">${item.time}</td><td><span class="badge" style="background:#10b981; color:white;">Hợp lệ</span></td>`; tbody.appendChild(tr); } }); if(!hasData) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: #ef4444; font-weight:bold;">Không tìm thấy dữ liệu!</td></tr>'; } catch (error) {} }); }
 
 if(localStorage.getItem('currentUser')) loadDashboard();
+}
