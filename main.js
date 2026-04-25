@@ -15,12 +15,12 @@ const db = getFirestore(app);
 const classStatusRef = doc(db, "settings", "classConfig"); 
 const attendanceCollection = collection(db, "attendance"); 
 const usersCollection = collection(db, "users"); 
-const logsCollection = collection(db, "system_logs"); // Bảng lưu Logs mới
+const logsCollection = collection(db, "system_logs"); 
 
 // TỌA ĐỘ ĐẠI HỌC AN GIANG
 const SCHOOL_LAT = 10.371727869842815; 
 const SCHOOL_LON = 105.43255463334839; 
-const MAX_DISTANCE = 10000;
+const MAX_DISTANCE = 10000; // Đang để 10km (10000 mét)
 
 function showToast(message, type = 'success') {
     const toastContainer = document.getElementById('toast-container');
@@ -40,7 +40,6 @@ function getDistanceFromLatLonInM(lat1, lon1, lat2, lon2) {
     return R * c; 
 }
 
-// HÀM GHI NHẬT KÝ HỆ THỐNG (AUDIT LOGS)
 async function writeLog(actionStr) {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if(!user) return;
@@ -81,6 +80,7 @@ document.getElementById('form-register-submit').addEventListener('submit', async
         showToast('Đăng ký thành công!', 'success'); toggleAuth('login'); 
     } catch(err) { showToast('Lỗi hệ thống!', 'error'); }
 });
+
 document.getElementById('form-login-submit').addEventListener('submit', async function(e) {
     e.preventDefault(); const email = document.getElementById('login-email').value; const pass = document.getElementById('login-password').value;
     try {
@@ -92,6 +92,7 @@ document.getElementById('form-login-submit').addEventListener('submit', async fu
         showToast(`Đăng nhập thành công!`, 'success'); loadDashboard();
     } catch(err) { showToast('Lỗi Server', 'error'); }
 });
+
 document.getElementById('form-admin-login-submit').addEventListener('submit', async function(e) {
     e.preventDefault(); const email = document.getElementById('admin-login-email').value; const pass = document.getElementById('admin-login-password').value;
     try {
@@ -103,9 +104,11 @@ document.getElementById('form-admin-login-submit').addEventListener('submit', as
         showToast('Truy cập Admin thành công', 'success'); loadDashboard();
     } catch(err) { showToast('Lỗi Server', 'error'); }
 });
+
 document.getElementById('btn-logout').addEventListener('click', () => { localStorage.removeItem('currentUser'); location.reload(); });
 
-// ================= PHÂN QUYỀN =================
+// ================= PHÂN QUYỀN (CHỈNH SỬA Ở ĐÂY) =================
+// ================= PHÂN QUYỀN (CHỈNH SỬA Ở ĐÂY ĐỂ HIỆN BILLING) =================
 function loadDashboard() {
     const user = JSON.parse(localStorage.getItem('currentUser')); if (!user) return;
     document.getElementById('auth-section').classList.add('hidden'); document.getElementById('dashboard-section').classList.remove('hidden');
@@ -114,12 +117,20 @@ function loadDashboard() {
     if (user.role === 'admin' || user.role === 'teacher') {
         document.getElementById('teacher-panel').classList.remove('hidden'); document.getElementById('student-panel').classList.add('hidden');
         document.querySelector('.sidebar').style.display = 'block'; document.querySelector('.topbar').style.left = '250px'; document.querySelector('.topbar').style.width = 'calc(100% - 250px)'; document.querySelector('.main-content').style.marginLeft = '250px';
+        
         if (user.role === 'admin') { 
+            // Admin thì HIỆN Admin Panel, ẨN Menu Billing
             document.getElementById('menu-admin').style.display = 'block'; 
-            loadAdminUsers(); loadAuditLogs(); // Load logs cho admin
-        } else { document.getElementById('menu-admin').style.display = 'none'; }
+            document.getElementById('menu-billing').style.display = 'none'; 
+            loadAdminUsers(); loadAuditLogs(); 
+        } else { 
+            // Giảng viên thì ẨN Admin Panel, HIỆN Menu Billing
+            document.getElementById('menu-admin').style.display = 'none'; 
+            document.getElementById('menu-billing').style.display = 'block'; 
+        }
         loadStudentsList(); 
     } else {
+        // Sinh viên thì ẩn sạch menu trái
         document.getElementById('student-panel').classList.remove('hidden'); document.getElementById('teacher-panel').classList.add('hidden');
         document.querySelector('.sidebar').style.display = 'none'; document.querySelector('.topbar').style.left = '0'; document.querySelector('.topbar').style.width = '100%'; document.querySelector('.main-content').style.marginLeft = '0';
         document.getElementById('student-panel').classList.add('student-centered'); 
@@ -137,7 +148,7 @@ document.querySelectorAll('.nav-menu li').forEach(item => {
     });
 });
 
-// ================= GIẢNG VIÊN TẠO MÃ QR =================
+// ================= CÁC TÍNH NĂNG KHÁC GIỮ NGUYÊN BÊN TRONG =================
 const classToggle = document.getElementById('class-toggle'); const statusText = document.getElementById('class-status-text'); const teacherClassInput = document.getElementById('teacher-class-code'); const qrDisplayArea = document.getElementById('teacher-qr-display'); const qrImage = document.getElementById('qr-image'); let isClassCurrentlyActive = false; 
 onSnapshot(classStatusRef, (docSnap) => {
     if (docSnap.exists()) {
@@ -159,7 +170,6 @@ if(classToggle) {
     });
 }
 
-// ================= SINH VIÊN QUÉT MÃ QR =================
 const btnStartScan = document.getElementById('btn-start-scan'); const qrReaderDiv = document.getElementById('qr-reader'); const attClassCodeInput = document.getElementById('att-class-code'); let html5QrcodeScanner;
 if(btnStartScan) {
     btnStartScan.addEventListener('click', () => {
@@ -177,7 +187,6 @@ if(btnStartScan) {
     });
 }
 
-// ================= SINH VIÊN ĐIỂM DANH (CHECK GPS) =================
 document.getElementById('form-attendance').addEventListener('submit', function(e) {
     e.preventDefault();
     if (!isClassCurrentlyActive) return showToast('Lớp chưa mở điểm danh!', 'error');
@@ -192,65 +201,44 @@ document.getElementById('form-attendance').addEventListener('submit', function(e
                     mssv: mssvStr, name: document.getElementById('att-name').value, classCode: document.getElementById('att-class-code').value, 
                     time: new Date().toLocaleTimeString('vi-VN') + ' - ' + new Date().toLocaleDateString('vi-VN'), status: "Có mặt", timestamp: serverTimestamp()
                 });
-                showToast('Vị trí hợp lệ. Điểm danh thành công!', 'success'); 
-                writeLog(`Sinh viên ${mssvStr} đã điểm danh thành công`);
-                this.reset();
+                showToast('Vị trí hợp lệ. Điểm danh thành công!', 'success'); writeLog(`Sinh viên ${mssvStr} đã điểm danh`); this.reset();
             } catch (error) { showToast('Lỗi khi lưu điểm danh!', 'error'); }
         }, (error) => { showToast('Lỗi: Bạn phải Bật Vị trí (Location) để điểm danh!', 'error'); });
     } else { showToast('Trình duyệt không hỗ trợ định vị GPS!', 'error'); }
 });
 
-// ================= CHUỖI ĐIỂM DANH SINH VIÊN (STREAK) =================
 const btnSearchMyHistory = document.getElementById('btn-search-my-history');
 if(btnSearchMyHistory) {
     btnSearchMyHistory.addEventListener('click', async () => {
         const mssv = document.getElementById('search-my-mssv').value.trim().toUpperCase(); if(!mssv) return alert('Nhập MSSV!');
         const tbody = document.getElementById('my-history-list'); tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Đang tải...</td></tr>';
-        document.getElementById('streak-container').style.display = 'none'; // Ẩn lửa đi
+        document.getElementById('streak-container').style.display = 'none'; 
         try {
             const querySnapshot = await getDocs(query(collection(db, "attendance"), where("mssv", "==", mssv))); tbody.innerHTML = '';
             if (querySnapshot.empty) return tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: red;">Chưa có dữ liệu điểm danh!</td></tr>';
-            
-            let index = 1; 
-            let uniqueDates = new Set(); // Đếm số buổi đi học
-            
+            let index = 1; let uniqueDates = new Set(); 
             querySnapshot.forEach((docSnap) => { 
-                const data = docSnap.data(); 
-                const dateStr = data.time.split(' - ')[1]; // Lấy ngày
-                if(dateStr) uniqueDates.add(dateStr);
-
+                const data = docSnap.data(); const dateStr = data.time.split(' - ')[1]; if(dateStr) uniqueDates.add(dateStr);
                 const tr = document.createElement('tr'); tr.innerHTML = `<td>${index++}</td><td style="font-weight: bold;">${data.classCode}</td><td>${data.time}</td><td><span class="badge" style="background:var(--success-color)">${data.status}</span></td>`; tbody.appendChild(tr); 
             });
-
-            // Hiển thị Streak Lửa rực rỡ
             document.getElementById('student-streak-count').textContent = uniqueDates.size;
             document.getElementById('streak-container').style.display = 'block';
-
         } catch (error) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Lỗi Server!</td></tr>'; }
     });
 }
 
-// ================= ADMIN NHẬT KÝ HỆ THỐNG (AUDIT LOGS) =================
 async function loadAuditLogs() {
     try {
-        const qLog = query(logsCollection, orderBy("timestamp", "desc"), limit(50));
-        const snap = await getDocs(qLog);
-        const tbody = document.getElementById('admin-audit-list');
-        if(!tbody) return; tbody.innerHTML = '';
-        if(snap.empty) return tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Chưa có hoạt động nào</td></tr>';
-        
+        const qLog = query(logsCollection, orderBy("timestamp", "desc"), limit(50)); const snap = await getDocs(qLog); const tbody = document.getElementById('admin-audit-list');
+        if(!tbody) return; tbody.innerHTML = ''; if(snap.empty) return tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Chưa có hoạt động nào</td></tr>';
         snap.forEach(docSnap => {
-            const data = docSnap.data();
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><span style="color:#888">${data.time}</span></td>
-                            <td style="font-weight:bold; color:var(--primary-color)">${data.email} <span style="font-weight:normal; color:#aaa; font-size:11px">(${data.role})</span></td>
-                            <td>${data.action}</td>`;
+            const data = docSnap.data(); const tr = document.createElement('tr');
+            tr.innerHTML = `<td><span style="color:#888">${data.time}</span></td><td style="font-weight:bold; color:var(--primary-color)">${data.email} <span style="font-weight:normal; color:#aaa; font-size:11px">(${data.role})</span></td><td>${data.action}</td>`;
             tbody.appendChild(tr);
         });
-    } catch(e) { console.error(e); }
+    } catch(e) { }
 }
 
-// ================= CÁC TÍNH NĂNG CHUNG CŨ (LIST, CHART, XÓA USER) =================
 async function loadStudentsList() {
     try {
         const snap = await getDocs(query(usersCollection, where("role", "==", "student"))); const tbody = document.getElementById('students-roster-list');
