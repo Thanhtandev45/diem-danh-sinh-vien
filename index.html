@@ -187,13 +187,25 @@
                     <h2>Tạo Tài Khoản</h2>
                     <p class="auth-subtitle">Tham gia vào hệ sinh thái UniCheck ngay hôm nay.</p>
                     <form id="form-register-submit">
-                        <div style="display: flex; gap: 15px; margin-bottom: 25px;">
-                            <label style="flex:1; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; font-weight: 700; cursor: pointer; color: #334155; background: #f8fafc;"><input type="radio" name="role" value="student" checked style="margin-right: 8px;"> Sinh viên</label>
-                            <label style="flex:1; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; font-weight: 700; cursor: pointer; color: #334155; background: #f8fafc;"><input type="radio" name="role" value="teacher" style="margin-right: 8px;"> Giảng viên</label>
+                        
+                        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                            <label style="flex:1; padding: 14px; border: 2px solid var(--border-color); border-radius: 12px; text-align: center; font-weight: 700; cursor: pointer; color: var(--text-main); background: transparent;">
+                                <input type="radio" name="role" value="student" checked style="margin-right: 8px;" onchange="document.getElementById('teacher-secret-code').style.display='none'"> Sinh viên
+                            </label>
+                            <label style="flex:1; padding: 14px; border: 2px solid var(--border-color); border-radius: 12px; text-align: center; font-weight: 700; cursor: pointer; color: var(--text-main); background: transparent;">
+                                <input type="radio" name="role" value="teacher" style="margin-right: 8px;" onchange="document.getElementById('teacher-secret-code').style.display='block'"> Giảng viên
+                            </label>
                         </div>
+
+                        <div class="input-group" id="teacher-secret-code" style="display: none; margin-bottom: 20px; animation: slideUp 0.3s ease;">
+                            <i class="fa-solid fa-key" style="color: #ef4444;"></i>
+                            <input type="text" id="reg-teacher-code" placeholder="Nhập Mã bảo mật nhà trường cấp" style="border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.05); color: #ef4444; font-weight: 800;">
+                        </div>
+
                         <div class="input-group"><i class="fa-solid fa-envelope"></i><input type="email" id="reg-email" placeholder="Email định danh" required></div>
                         <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="reg-password" placeholder="Tạo mật khẩu" required><i class="fa-regular fa-eye toggle-password"></i></div>
                         <div class="input-group"><i class="fa-solid fa-shield-check"></i><input type="password" id="reg-confirm-password" placeholder="Xác nhận mật khẩu" required><i class="fa-regular fa-eye toggle-password"></i></div>
+                        
                         <button type="submit" class="btn btn-primary" style="margin-top: 10px; padding: 18px;">Hoàn Tất Đăng Ký</button>
                         <p class="switch-form"><span onclick="toggleAuth('login')"><i class="fa-solid fa-arrow-left"></i> Trở về Đăng nhập</span></p>
                     </form>
