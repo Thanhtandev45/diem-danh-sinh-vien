@@ -55,19 +55,16 @@ setInterval(() => {
 }, 1000);
 
 // ================= XỬ LÝ GIAO DIỆN AUTH =================
-window.toggleAuth = function(formType = 'login') {
+// --- ĐIỀU HƯỚNG ---
+window.toggleAuth = (type) => {
     document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-    const target = document.getElementById(formType + '-form');
+    
+    // Đã fix lỗi tìm sai ID của Admin
+    const targetId = (type === 'admin') ? 'admin-login-form' : type + '-form';
+    
+    const target = document.getElementById(targetId);
     if(target) target.classList.add('active');
-}
-
-document.querySelectorAll('.toggle-password').forEach(icon => {
-    icon.addEventListener('click', function() {
-        const input = this.previousElementSibling;
-        input.type = input.type === 'password' ? 'text' : 'password';
-        this.classList.toggle('fa-eye'); this.classList.toggle('fa-eye-slash');
-    });
-});
+};
 
 // ================= XÁC THỰC (ĐĂNG KÝ / ĐĂNG NHẬP) =================
 document.getElementById('form-register-submit')?.addEventListener('submit', async function(e) {
