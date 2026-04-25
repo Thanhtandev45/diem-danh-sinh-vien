@@ -3,203 +3,415 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Điểm Danh Sinh Viên | UniCheck</title>
+    <title>Hệ Thống Điểm Danh | UniCheck Enterprise</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        /* ================= CSS "HẦM HỐ & PRO" ================= */
-        /* Thanh cuộn (Scrollbar) xịn xò */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        :root { --primary-color: #4f46e5; --primary-hover: #4338ca; --primary-glow: rgba(79, 70, 229, 0.3); --success-color: #10b981; --success-glow: rgba(16, 185, 129, 0.2); --danger-color: #ef4444; --danger-glow: rgba(239, 68, 68, 0.2); --dark-bg: #0f172a; --dark-panel: #1e293b; --bg-main: #f8fafc; --card-bg: #ffffff; --text-main: #0f172a; --text-light: #f8fafc; --text-muted: #64748b; --border-color: #e2e8f0; --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); --radius-md: 12px; --radius-lg: 24px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+        .hidden { display: none !important; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #3b82f6, #9333ea); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #1e3a8a; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        .auth-form { display: none; }
-        .auth-form.active { display: block; animation: fadeIn 0.5s ease; }
-        .auth-wrapper { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); position: relative; overflow: hidden; }
-        .auth-wrapper::before { content: ''; position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(59,130,246,0.2) 0%, rgba(0,0,0,0) 70%); top: -200px; left: -200px; border-radius: 50%; animation: pulse 6s infinite alternate; }
-        .auth-wrapper::after { content: ''; position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(147,51,234,0.2) 0%, rgba(0,0,0,0) 70%); bottom: -150px; right: -150px; border-radius: 50%; animation: pulse 8s infinite alternate-reverse; }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.1); opacity: 1; } }
-        
-        .auth-container { background: rgba(255, 255, 255, 0.95) !important; backdrop-filter: blur(20px); box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), 0 0 25px rgba(59, 130, 246, 0.4) !important; border-radius: 24px !important; padding: 45px !important; z-index: 10; transform: translateY(0); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 100%; max-width: 420px; border: 1px solid rgba(255,255,255,0.2); }
-        .auth-container:hover { transform: translateY(-8px); box-shadow: 0 40px 70px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.6) !important; }
-        .auth-form h2 { color: #1e3a8a; font-weight: 900; font-size: 30px; margin-bottom: 30px; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
-        .admin-link { text-align: center; margin-top: 30px; opacity: 0.4; font-size: 13px; cursor: pointer; transition: 0.3s; font-weight: bold;}
-        .admin-link:hover { opacity: 1; color: var(--danger-color); letter-spacing: 1.5px; text-shadow: 0 0 8px rgba(220,53,69,0.4); }
-        
-        .student-centered { display: flex !important; flex-direction: column; align-items: center; width: 100%; padding-top: 40px; }
-        .student-centered .glass-card { width: 100%; max-width: 650px; margin-bottom: 35px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); transition: 0.3s; }
-        .student-centered .glass-card:hover { transform: translateY(-5px); box-shadow: 0 20px 45px rgba(0,0,0,0.12); }
-        
-        .admin-header { border-left: 6px solid var(--danger-color); padding-left: 20px; margin-bottom: 25px; background: linear-gradient(90deg, rgba(220,53,69,0.05) 0%, transparent 100%); padding-top: 10px; padding-bottom: 10px; border-radius: 0 10px 10px 0; }
-        .menu-category { font-size: 12px; text-transform: uppercase; color: #94a3b8; font-weight: 800; margin: 25px 0 10px 20px; letter-spacing: 1.5px; }
-        
-        /* Hiệu ứng Sidebar Menu */
-        .nav-menu li { padding: 14px 20px; margin: 6px 15px; border-radius: 12px; transition: all 0.3s ease; cursor: pointer; font-weight: 500; }
-        .nav-menu li i { width: 28px; text-align: center; margin-right: 10px; font-size: 16px; }
-        .nav-menu li:hover { background: rgba(59,130,246,0.1); transform: translateX(8px); }
-        .nav-menu li.active { background: linear-gradient(135deg, var(--primary-color) 0%, #6366f1 100%); color: white; box-shadow: 0 8px 20px rgba(59,130,246,0.4); font-weight: 600; }
-        .nav-menu li.active i { color: white; }
-        
-        #qr-reader { width: 100%; border-radius: 15px; overflow: hidden; display: none; margin-bottom: 20px; border: 3px solid #6366f1; box-shadow: 0 10px 25px rgba(99,102,241,0.2); }
-        #teacher-qr-display { text-align: center; margin-top: 20px; display: none; }
-        #teacher-qr-display img { border-radius: 15px; border: 4px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.15); transition: 0.3s; }
-        #teacher-qr-display img:hover { transform: scale(1.05); }
-        
-        /* Hiệu ứng lửa Streak */
-        .streak-box { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(255, 154, 158, 0.4); display: none; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 2px solid rgba(255,255,255,0.5); }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .auth-wrapper { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; position: relative; overflow: hidden; background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #1e3a8a); background-size: 400% 400%; animation: gradientBG 15s ease infinite; }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .orb { position: absolute; border-radius: 50%; filter: blur(80px); z-index: 0; animation: floatOrb 10s infinite ease-in-out alternate; }
+        .orb-1 { width: 500px; height: 500px; background: rgba(79, 70, 229, 0.4); top: -150px; left: -100px; }
+        .orb-2 { width: 400px; height: 400px; background: rgba(16, 185, 129, 0.3); bottom: -100px; right: -50px; animation-delay: -5s; }
+        @keyframes floatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 50px) scale(1.1); } }
+        .auth-container { display: flex; width: 1000px; max-width: 100%; z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-radius: var(--radius-lg); box-shadow: 0 40px 80px -20px rgba(0,0,0,0.8); overflow: hidden; border: 1px solid rgba(255,255,255,0.2); transform: translateY(0); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .auth-container:hover { transform: translateY(-5px); box-shadow: 0 50px 100px -20px rgba(0,0,0,0.9); }
+        .auth-branding { flex: 1; padding: 60px 50px; color: white; display: flex; flex-direction: column; justify-content: space-between; position: relative; background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(49, 46, 129, 0.95) 100%); }
+        .auth-branding::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('https://www.transparenttextures.com/patterns/cubes.png'); opacity: 0.1; z-index: -1; }
+        .brand-features { margin-top: 40px; }
+        .brand-features p { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; font-size: 15px; color: #e2e8f0; font-weight: 500; }
+        .brand-features i { background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 10px; border-radius: 50%; font-size: 16px; box-shadow: 0 0 15px rgba(16,185,129,0.3); }
+        .auth-forms-wrapper { flex: 1; background: #ffffff; padding: 60px 50px; position: relative; }
+        @media (max-width: 850px) { .auth-branding { display: none; } .auth-container { max-width: 450px; } .auth-forms-wrapper { padding: 40px 30px; } }
+        .auth-form { display: none; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .auth-form.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .auth-forms-wrapper h2 { color: var(--text-main); font-weight: 900; font-size: 32px; letter-spacing: -1px; text-align: left; margin-bottom: 8px; }
+        .auth-subtitle { color: var(--text-muted); font-size: 15px; margin-bottom: 35px; font-weight: 500; text-align: left; }
+        .input-group { position: relative; margin-bottom: 22px; }
+        .input-group i:first-child { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 16px; transition: 0.3s; }
+        .toggle-password { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8; transition: 0.3s; }
+        .toggle-password:hover { color: var(--primary-color); }
+        .input-group input { width: 100%; padding: 16px 45px 16px 50px; border-radius: var(--radius-md); border: 2px solid #e2e8f0; background: #f8fafc; outline: none; font-size: 15px; font-weight: 600; color: var(--text-main); transition: 0.3s; }
+        .input-group input:focus { background: white; border-color: var(--primary-color); box-shadow: 0 0 0 4px var(--primary-glow); }
+        .input-group input:focus + i { color: var(--primary-color); }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: var(--radius-md); font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; color: white; }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: linear-gradient(90deg, var(--primary-color), #6366f1); box-shadow: 0 8px 20px var(--primary-glow); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px var(--primary-glow); filter: brightness(1.1); }
+        .btn-danger { background: linear-gradient(90deg, #ef4444, #be123c); box-shadow: 0 8px 20px var(--danger-glow); }
+        .social-login-box { display: flex; gap: 15px; margin-top: 25px; }
+        .btn-social { flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border: 2px solid #e2e8f0; border-radius: var(--radius-md); background: white; font-weight: 700; color: #334155; cursor: pointer; transition: 0.3s; }
+        .btn-social:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-2px); }
+        .btn-social img { width: 20px; height: 20px; }
+        .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; color: #94a3b8; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 2px solid #e2e8f0; }
+        .divider:not(:empty)::before { margin-right: .5em; }
+        .divider:not(:empty)::after { margin-left: .5em; }
+        .switch-form { text-align: center; margin-top: 25px; font-size: 15px; color: var(--text-muted); font-weight: 500; }
+        .switch-form span { color: var(--primary-color); cursor: pointer; font-weight: 800; transition: 0.2s; }
+        .switch-form span:hover { color: var(--primary-hover); text-decoration: underline; }
+        .admin-link { text-align: center; margin-top: 30px; opacity: 0.5; font-size: 13px; cursor: pointer; transition: 0.3s; font-weight: bold; color: #64748b;}
+        .admin-link:hover { opacity: 1; color: var(--danger-color); letter-spacing: 1px; }
 
-        /* Vùng nguy hiểm hầm hố */
-        .danger-zone { background: repeating-linear-gradient(45deg, rgba(220,53,69,0.05), rgba(220,53,69,0.05) 10px, transparent 10px, transparent 20px); border: 2px dashed var(--danger-color) !important; position: relative; overflow: hidden; }
-        .danger-zone::before { content: 'WARNING'; position: absolute; top: -10px; right: -20px; font-size: 60px; font-weight: 900; color: rgba(220,53,69,0.05); transform: rotate(-10deg); pointer-events: none; }
+        /* ================= DASHBOARD UI ================= */
+        .sidebar { width: 280px; background: var(--dark-bg); color: var(--text-light); display: flex; flex-direction: column; transition: 0.3s; box-shadow: 4px 0 24px rgba(0,0,0,0.1); z-index: 100; position: fixed; height: 100vh; }
+        .sidebar-header { padding: 25px 20px; display: flex; align-items: center; gap: 15px; font-size: 22px; font-weight: 900; letter-spacing: -0.5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .user-info { padding: 15px; display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.05); margin: 20px 15px 10px 15px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.05); }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; box-shadow: var(--shadow-sm); }
+        .badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* Thẻ VIP Card hầm hố */
-        .vip-card { background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 100%); color: white; border-radius: 20px; padding: 40px 30px; box-shadow: 0 20px 50px rgba(76, 29, 149, 0.4); text-align: center; position: relative; overflow: hidden; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid rgba(139, 92, 246, 0.3); margin: 0 auto; }
-        .vip-card:hover { transform: translateY(-12px); box-shadow: 0 30px 60px rgba(76, 29, 149, 0.6); border-color: rgba(139, 92, 246, 0.8); }
-        .vip-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); transform: skewX(-20deg); animation: shine 3s infinite; }
-        @keyframes shine { 100% { left: 200%; } }
-        .vip-card h2 { color: #facc15; font-size: 42px; margin: 20px 0; text-shadow: 0 0 20px rgba(250, 204, 21, 0.4); font-weight: 900; }
-        .vip-card ul { text-align: left; margin: 30px 0; padding: 0; list-style: none; }
-        .vip-card ul li { margin-bottom: 15px; font-size: 15px; color: #e2e8f0; display: flex; align-items: center; }
-        .vip-card ul li i { color: #10b981; margin-right: 12px; font-size: 18px; }
-        .vip-badge { position: absolute; top: 25px; right: -40px; background: linear-gradient(90deg, #facc15, #f59e0b); color: #000; padding: 8px 50px; transform: rotate(45deg); font-weight: 900; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); letter-spacing: 2px;}
+        .nav-menu { list-style: none; padding: 10px 0; overflow-y: auto; flex: 1; }
+        .menu-category { font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 800; margin: 25px 0 10px 20px; letter-spacing: 1.5px; }
+        .nav-menu li { padding: 14px 20px; margin: 4px 15px; border-radius: var(--radius-md); cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px; color: #cbd5e1; font-weight: 500; font-size: 15px; }
+        .nav-menu li i { width: 25px; text-align: center; font-size: 16px; }
+        .nav-menu li:hover { background: rgba(255,255,255,0.1); color: white; transform: translateX(5px); }
+        .nav-menu li.active { background: linear-gradient(90deg, var(--primary-color), #6366f1); color: white; font-weight: 600; box-shadow: 0 4px 15px var(--primary-glow); }
+        
+        .main-content { flex: 1; display: flex; flex-direction: column; background: var(--bg-main); min-height: 100vh; margin-left: 280px; }
+        .topbar { height: 76px; background: var(--card-bg); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .search-bar { background: #f1f5f9; padding: 12px 20px; border-radius: 20px; display: flex; align-items: center; gap: 12px; width: 300px; border: 1px solid transparent; transition: 0.3s; }
+        .search-bar:focus-within { background: white; border-color: var(--primary-color); box-shadow: 0 0 0 4px var(--primary-glow); }
+        .search-bar input { background: transparent; border: none; outline: none; width: 100%; font-weight: 500; color: var(--text-main); }
+        .topbar-actions { display: flex; align-items: center; gap: 20px; }
+        .clock { font-weight: 800; font-family: monospace; font-size: 16px; color: var(--primary-color); background: #e0e7ff; padding: 8px 16px; border-radius: var(--radius-sm); }
+
+        .panel { padding: 35px; animation: fadeIn 0.4s ease; display: none; }
+        .panel.active { display: block; }
+        .panel-header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .panel-header-actions h3 { font-size: 24px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+
+        .dashboard-widgets { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 30px; }
+        .widget-card { background: var(--card-bg); border-radius: var(--radius-lg); padding: 25px; display: flex; align-items: center; gap: 20px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color); transition: 0.3s; }
+        .widget-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+        .widget-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; justify-content: center; align-items: center; font-size: 24px; }
+        .widget-info p { color: var(--text-muted); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .widget-info h4 { font-size: 28px; font-weight: 900; color: var(--text-main); }
+
+        .table-container { background: var(--card-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--border-color); overflow: hidden; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 16px 24px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        .data-table th { background: #f8fafc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px; }
+        .data-table tr:hover { background: #f1f5f9; }
+        .data-table td { font-weight: 500; color: #334155; }
+
+        .switch { position: relative; display: inline-block; width: 52px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--success-color); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .settings-card { background: var(--card-bg); padding: 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--border-color); }
+        .settings-title { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); font-weight: 800; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        .danger-zone { border: 2px dashed var(--danger-color) !important; background: #fef2f2; }
+
+        #qr-reader { width: 100%; border-radius: 15px; overflow: hidden; display: none; margin-bottom: 20px; border: 3px solid var(--primary-color); box-shadow: var(--shadow-md); }
+        #teacher-qr-display img { border-radius: 15px; border: 4px solid #fff; box-shadow: var(--shadow-lg); transition: 0.3s; margin-top: 15px;}
+        .streak-box { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); padding: 25px; border-radius: var(--radius-lg); text-align: center; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(255, 154, 158, 0.4); display: none; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 2px solid rgba(255,255,255,0.5); }
+        
+        .vip-card { background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 100%); color: white; border-radius: 20px; padding: 40px 30px; box-shadow: 0 20px 50px rgba(76, 29, 149, 0.4); text-align: center; position: relative; overflow: hidden; transition: 0.4s; border: 1px solid rgba(139, 92, 246, 0.3); margin: 0 auto; width: 100%; max-width: 450px;}
+        .vip-card:hover { transform: translateY(-10px); box-shadow: 0 30px 60px rgba(76, 29, 149, 0.6); border-color: rgba(139, 92, 246, 0.8); }
+        .vip-card h2 { color: #facc15; font-size: 42px; margin: 20px 0; font-weight: 900; }
+        .vip-card ul { text-align: left; margin: 30px 0; list-style: none; }
+        .vip-card ul li { margin-bottom: 15px; font-size: 15px; color: #e2e8f0; display: flex; align-items: center; gap: 12px; }
+        .vip-card ul li i { color: #10b981; font-size: 18px; }
+        .vip-badge { position: absolute; top: 25px; right: -40px; background: linear-gradient(90deg, #facc15, #f59e0b); color: #000; padding: 8px 50px; transform: rotate(45deg); font-weight: 900; font-size: 13px; letter-spacing: 2px;}
+
+        #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
+        .toast { min-width: 300px; padding: 16px 24px; border-radius: var(--radius-md); color: white; font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 12px; animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, fadeOut 0.5s ease 3s forwards; }
+        .toast.success { background: var(--success-color); border-left: 4px solid #047857; }
+        .toast.error { background: var(--danger-color); border-left: 4px solid #b91c1c; }
+
+        /* ================= CÀI ĐẶT ĐA TẦNG (NESTED TABS) ================= */
+        .settings-layout { display: flex; gap: 30px; align-items: flex-start; }
+        .settings-sidebar-inner { width: 260px; background: var(--card-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--border-color); padding: 15px; }
+        .settings-tabs { list-style: none; }
+        .settings-tabs li { padding: 14px 18px; cursor: pointer; border-radius: var(--radius-md); margin-bottom: 8px; font-weight: 600; color: var(--text-muted); transition: 0.3s; display: flex; align-items: center; gap: 12px; font-size: 15px; }
+        .settings-tabs li:hover { background: #f1f5f9; color: var(--text-main); }
+        .settings-tabs li.active { background: var(--primary-color); color: white; box-shadow: 0 4px 12px var(--primary-glow); }
+        .settings-content-inner { flex: 1; }
+        .setting-section { animation: fadeIn 0.4s ease; display: none; }
+        .setting-section.active { display: block; }
     </style>
 </head>
 <body>
     <div id="toast-container"></div>
 
     <section id="auth-section" class="auth-wrapper">
-        <div class="glass-card auth-container" id="auth-container">
-            <div class="auth-form login-form active" id="login-form">
-                <div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
-                    <a href="#" onclick="alert('Vui lòng liên hệ Admin (hoặc Giảng viên) để được cấp lại mật khẩu!'); return false;" style="font-size: 13px; color: var(--primary-color); text-decoration: none; font-weight: bold;">
-                        Quên mật khẩu?
-                    </a>
+        <div class="orb orb-1"></div><div class="orb orb-2"></div>
+        <div class="auth-container" id="auth-container">
+            <div class="auth-branding">
+                <div>
+                    <i class="fa-solid fa-bolt" style="color: #facc15; font-size: 48px; margin-bottom: 25px; filter: drop-shadow(0 0 15px rgba(250,204,21,0.5));"></i>
+                    <h1 style="font-size: 46px; font-weight: 900; line-height: 1.1; margin-bottom: 20px;">UniCheck<br><span style="color: #818cf8;">Enterprise</span></h1>
+                    <p style="font-size: 16px; color: #cbd5e1; font-weight: 500; line-height: 1.6;">Nền tảng Quản trị Học vụ & Điểm danh kỹ thuật số thông minh. Bảo mật tuyệt đối, vận hành mượt mà.</p>
                 </div>
-                <h2><i class="fa-solid fa-bolt" style="color: #facc15;"></i> UniCheck</h2>
-                <form id="form-login-submit">
-                    <div class="input-group"><i class="fa-solid fa-envelope"></i><input type="email" id="login-email" placeholder="Email đăng nhập" required></div>
-                    <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="login-password" placeholder="Mật khẩu bảo mật" required><i class="fa-regular fa-eye toggle-password"></i></div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 16px; font-weight: bold; padding: 14px; margin-top: 10px; border-radius: 10px; box-shadow: 0 8px 20px rgba(59,130,246,0.3);">Đăng Nhập Hệ Thống</button>
-                    <p class="switch-form" style="text-align: center; margin-top: 25px;">Chưa có tài khoản? <span onclick="toggleAuth('register')" style="font-weight: 800; color: var(--primary-color);">Đăng ký ngay</span></p>
-                </form>
-                <div class="admin-link" onclick="toggleAuth('admin')"><i class="fa-solid fa-fingerprint"></i> Truy Cập Quản Trị Hệ Thống</div>
+                <div class="brand-features">
+                    <p><i class="fa-solid fa-location-crosshairs"></i> Công nghệ Định vị Vệ tinh (GPS)</p>
+                    <p><i class="fa-solid fa-qrcode"></i> Check-in tốc độ cao qua Mã QR</p>
+                    <p><i class="fa-solid fa-chart-line"></i> Báo cáo Analytics Thời gian thực</p>
+                </div>
+                <div style="font-size: 13px; color: #94a3b8; font-weight: 700; letter-spacing: 1.5px;">© 2026 DESIGNED BY THANHTANDEV45</div>
             </div>
-
-            <div class="auth-form register-form" id="register-form">
-                <h2>Tạo Tài Khoản</h2>
-                <form id="form-register-submit">
-                    <div class="role-selector" style="margin-bottom: 20px;">
-                        <label><input type="radio" name="role" value="student" checked> Sinh viên</label>
-                        <label><input type="radio" name="role" value="teacher"> Giảng viên</label>
-                    </div>
-                    <div class="input-group"><i class="fa-solid fa-envelope"></i><input type="email" id="reg-email" placeholder="Email của bạn" required></div>
-                    <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="reg-password" placeholder="Tạo mật khẩu" required><i class="fa-regular fa-eye toggle-password"></i></div>
-                    <div class="input-group"><i class="fa-solid fa-shield-check"></i><input type="password" id="reg-confirm-password" placeholder="Xác nhận mật khẩu" required><i class="fa-regular fa-eye toggle-password"></i></div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-weight: bold; border-radius: 10px;">Đăng Ký Tài Khoản</button>
-                    <p class="switch-form" style="text-align: center; margin-top: 20px;"><span onclick="toggleAuth('login')"><i class="fa-solid fa-arrow-left"></i> Trở về đăng nhập</span></p>
-                </form>
-            </div>
-
-            <div class="auth-form admin-login-form" id="admin-login-form">
-                <h2 style="color: var(--danger-color); text-shadow: 0 0 10px rgba(220,53,69,0.3);"><i class="fa-solid fa-skull"></i> God Mode</h2>
-                <form id="form-admin-login-submit">
-                    <div class="input-group" style="border-color: rgba(220,53,69,0.3);"><i class="fa-solid fa-envelope" style="color: var(--danger-color);"></i><input type="email" id="admin-login-email" placeholder="Email Quản Trị Viên" required></div>
-                    <div class="input-group" style="border-color: rgba(220,53,69,0.3);"><i class="fa-solid fa-key" style="color: var(--danger-color);"></i><input type="password" id="admin-login-password" placeholder="Mã đặc quyền hệ thống" required><i class="fa-regular fa-eye toggle-password"></i></div>
-                    <button type="submit" class="btn btn-danger" style="background: linear-gradient(90deg, #dc3545, #991b1b); width: 100%; padding: 14px; font-weight: bold; border-radius: 10px; border: none; box-shadow: 0 8px 25px rgba(220,53,69,0.4);">Kích Hoạt Quyền</button>
-                    <p class="switch-form" style="margin-top: 25px; text-align: center;"><span onclick="toggleAuth('login')"><i class="fa-solid fa-power-off"></i> Thoát chế độ Admin</span></p>
-                </form>
+            <div class="auth-forms-wrapper">
+                <div class="auth-form login-form active" id="login-form">
+                    <div style="text-align: right; margin-bottom: 10px;"><a href="#" onclick="alert('Vui lòng liên hệ Admin (Phòng Đào tạo) để cấp lại mật khẩu!'); return false;" style="font-size: 14px; color: var(--primary-color); font-weight: 700; text-decoration: none;">Quên mật khẩu?</a></div>
+                    <h2>Đăng nhập</h2>
+                    <p class="auth-subtitle">Chào mừng bạn quay trở lại với hệ thống.</p>
+                    <form id="form-login-submit">
+                        <div class="input-group"><i class="fa-solid fa-envelope"></i><input type="email" id="login-email" placeholder="Nhập địa chỉ Email" required></div>
+                        <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="login-password" placeholder="Mật khẩu truy cập" required><i class="fa-regular fa-eye toggle-password"></i></div>
+                        <button type="submit" class="btn btn-primary" style="border-radius: 12px; padding: 18px; font-size: 16px;">Đăng Nhập Vào Hệ Thống</button>
+                        <div class="divider">HOẶC TIẾP TỤC BẰNG</div>
+                        <div class="social-login-box">
+                            <button type="button" class="btn-social" onclick="alert('Tính năng Oauth2 đang được phát triển!')"><img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" alt="Google"> Google</button>
+                            <button type="button" class="btn-social" onclick="alert('Tính năng Oauth2 đang được phát triển!')"><img src="https://cdn-icons-png.flaticon.com/512/732/732221.png" alt="Microsoft"> Microsoft</button>
+                        </div>
+                        <p class="switch-form">Chưa có tài khoản? <span onclick="toggleAuth('register')">Mở tài khoản mới</span></p>
+                    </form>
+                    <div class="admin-link" onclick="toggleAuth('admin')"><i class="fa-solid fa-shield-halved"></i> Cổng Quản Trị Hệ Thống (Dành cho Admin)</div>
+                </div>
+                <div class="auth-form register-form" id="register-form">
+                    <h2>Tạo Tài Khoản</h2>
+                    <p class="auth-subtitle">Tham gia vào hệ sinh thái UniCheck ngay hôm nay.</p>
+                    <form id="form-register-submit">
+                        <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                            <label style="flex:1; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; font-weight: 700; cursor: pointer; color: #334155; background: #f8fafc;"><input type="radio" name="role" value="student" checked style="margin-right: 8px;"> Sinh viên</label>
+                            <label style="flex:1; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; font-weight: 700; cursor: pointer; color: #334155; background: #f8fafc;"><input type="radio" name="role" value="teacher" style="margin-right: 8px;"> Giảng viên</label>
+                        </div>
+                        <div class="input-group"><i class="fa-solid fa-envelope"></i><input type="email" id="reg-email" placeholder="Email định danh" required></div>
+                        <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="reg-password" placeholder="Tạo mật khẩu" required><i class="fa-regular fa-eye toggle-password"></i></div>
+                        <div class="input-group"><i class="fa-solid fa-shield-check"></i><input type="password" id="reg-confirm-password" placeholder="Xác nhận mật khẩu" required><i class="fa-regular fa-eye toggle-password"></i></div>
+                        <button type="submit" class="btn btn-primary" style="margin-top: 10px; padding: 18px;">Hoàn Tất Đăng Ký</button>
+                        <p class="switch-form"><span onclick="toggleAuth('login')"><i class="fa-solid fa-arrow-left"></i> Trở về Đăng nhập</span></p>
+                    </form>
+                </div>
+                <div class="auth-form admin-login-form" id="admin-login-form">
+                    <h2 style="color: var(--danger-color);"><i class="fa-solid fa-skull"></i> God Mode</h2>
+                    <p class="auth-subtitle" style="color: #dc2626;">Khu vực Tối mật. Chỉ dành cho Quản trị viên cấp cao.</p>
+                    <form id="form-admin-login-submit">
+                        <div class="input-group"><i class="fa-solid fa-envelope" style="color: var(--danger-color);"></i><input type="email" id="admin-login-email" placeholder="Email Quản Trị Viên" required style="border-color: rgba(239,68,68,0.4); background: #fef2f2;"></div>
+                        <div class="input-group"><i class="fa-solid fa-key" style="color: var(--danger-color);"></i><input type="password" id="admin-login-password" placeholder="Mã bảo mật đặc quyền" required style="border-color: rgba(239,68,68,0.4); background: #fef2f2;"><i class="fa-regular fa-eye toggle-password"></i></div>
+                        <button type="submit" class="btn btn-danger" style="margin-top: 15px; padding: 18px;">KÍCH HOẠT QUYỀN KIỂM SOÁT</button>
+                        <p class="switch-form"><span onclick="toggleAuth('login')" style="color: #64748b;"><i class="fa-solid fa-power-off"></i> Hủy lệnh. Rời khỏi hệ thống</span></p>
+                    </form>
+                </div>
             </div>
         </div>
-        
-        <div style="position: absolute; bottom: 25px; text-align: center; width: 100%; color: rgba(255,255,255,0.4); font-size: 14px; letter-spacing: 2px; z-index: 100; font-weight: 500;">
-            Designed & Developed by <b style="color: rgba(255,255,255,0.9); text-shadow: 0 0 10px rgba(255,255,255,0.5);">Thanhtandev45</b> © 2026
+        <div style="position: absolute; bottom: 20px; text-align: center; width: 100%; color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 600; letter-spacing: 1px; z-index: 100;">
+            Designed & Developed by Thanhtandev45 © 2026
         </div>
     </section>
 
     <section id="dashboard-section" class="dashboard-wrapper hidden">
         <aside class="sidebar">
-            <div class="sidebar-header"><i class="fa-solid fa-bolt" style="color: #facc15; font-size: 24px;"></i><h2 style="letter-spacing: 1px;">UniCheck</h2></div>
-            <div class="user-info" style="background: rgba(0,0,0,0.05); border-radius: 15px; margin: 0 15px; padding: 15px;">
-                <img src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff&rounded=true&bold=true" alt="Avatar" class="avatar" style="box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-                <div><h4 id="user-display-email" style="font-size: 14px; word-break: break-all;">user@email.com</h4><span id="user-display-role" class="badge" style="background: linear-gradient(90deg, #3b82f6, #8b5cf6);">Sinh viên</span></div>
+            <div class="sidebar-header"><i class="fa-solid fa-bolt" style="color: #facc15; font-size: 26px; filter: drop-shadow(0 0 5px rgba(250,204,21,0.5));"></i><h2 style="letter-spacing: 1px;">UniCheck</h2></div>
+            <div class="user-info">
+                <img src="" alt="Avatar" class="avatar">
+                <div><h4 id="user-display-email" style="font-size: 14px; word-break: break-all;">user@email.com</h4><span id="user-display-role" class="badge">Role</span></div>
             </div>
             
-            <ul class="nav-menu" style="padding: 0; margin-top: 15px;">
-                <div class="menu-category">Workspace</div>
-                <li id="menu-home" data-target="teacher-panel" class="active"><i class="fa-solid fa-qrcode"></i> Điểm danh Real-time</li>
-                <li id="menu-students" data-target="students-panel"><i class="fa-solid fa-users"></i> Quản lý Sinh viên</li>
-                <li id="menu-history" data-target="history-panel"><i class="fa-solid fa-clock-rotate-left"></i> Tra cứu Lịch sử</li>
-                
-                <div class="menu-category">Analytics</div>
-                <li id="menu-reports" data-target="reports-panel"><i class="fa-solid fa-chart-line"></i> Biểu đồ Phân tích</li>
+            <ul class="nav-menu" style="padding: 0; margin-top: 10px;">
+                <div class="menu-category role-teacher role-student">Khu Vực Học Tập</div>
+                <li class="role-student" data-target="student-home-panel"><i class="fa-solid fa-expand"></i> Cổng Điểm Danh</li>
+                <li class="role-student" data-target="student-history-panel"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Của Tôi</li>
 
-                <div class="menu-category">System</div>
-                <li id="menu-settings" data-target="settings-panel"><i class="fa-solid fa-user-gear"></i> Cài đặt Cá nhân</li>
+                <div class="menu-category role-teacher role-admin">Quản Lý Lớp Học</div>
+                <li class="role-teacher" data-target="teacher-panel"><i class="fa-solid fa-qrcode"></i> Check-in Real-time</li>
+                <li class="role-teacher role-admin" data-target="students-panel"><i class="fa-solid fa-users"></i> Quản lý Sinh viên</li>
+                <li class="role-teacher role-admin" data-target="history-panel"><i class="fa-solid fa-list-check"></i> Tra cứu Tổng hợp</li>
                 
-                <li id="menu-billing" data-target="billing-panel" style="display: none; color: #8b5cf6; font-weight: 800;">
-                    <i class="fa-solid fa-crown" style="color: #facc15; text-shadow: 0 0 5px rgba(250,204,21,0.5);"></i> Nâng Cấp Pro
-                </li>
+                <div class="menu-category role-teacher role-admin">Thống Kê</div>
+                <li class="role-teacher role-admin" data-target="reports-panel"><i class="fa-solid fa-chart-line"></i> Biểu đồ Phân tích</li>
 
-                <li id="menu-admin" data-target="admin-panel" style="display: none; color: var(--danger-color); font-weight: 800; border-top: 1px dashed rgba(0,0,0,0.1); margin-top: 15px; padding-top: 20px;">
-                    <i class="fa-solid fa-server"></i> Quản Trị Tối Cao
-                </li>
+                <div class="menu-category role-all">Hệ Thống</div>
+                <li class="role-all" data-target="settings-panel"><i class="fa-solid fa-gear"></i> Cài đặt & Bảo mật</li>
+                <li class="role-teacher" data-target="billing-panel" style="color: #a855f7; font-weight: 800;"><i class="fa-solid fa-crown" style="color: #facc15;"></i> Nâng Cấp Pro</li>
+                <li class="role-admin" data-target="admin-panel" style="color: var(--danger-color); font-weight: 800;"><i class="fa-solid fa-server"></i> Quản Trị Tối Cao</li>
             </ul>
 
-            <div style="position: absolute; bottom: 20px; width: 100%; text-align: center; font-size: 11px; color: #aaa; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 20px; left: 0;">
-                <span style="display: block; margin-bottom: 5px; font-weight: bold; letter-spacing: 1px;">UniCheck Core V1.0</span>
-                Powered by <strong style="color: var(--primary-color);">Thanhtandev45</strong> © 2026
+            <div style="position: absolute; bottom: 20px; width: 100%; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; left: 0;">
+                <span style="display: block; margin-bottom: 5px; font-weight: 700; letter-spacing: 1px; color:#94a3b8;">UniCheck Core V2.0</span>
+                Powered by <strong style="color: #818cf8;">Thanhtandev45</strong> © 2026
             </div>
         </aside>
 
         <main class="main-content">
-            <header class="topbar" style="box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-                <div class="search-bar" style="background: #f1f5f9; border: none; border-radius: 12px;"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Tìm kiếm nhanh..." style="background: transparent;"></div>
+            <header class="topbar">
+                <div class="search-bar"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Tìm kiếm nhanh..."></div>
                 <div class="topbar-actions">
-                    <div class="clock" id="real-time-clock" style="font-weight: 900; color: #1e3a8a; background: #e0e7ff; padding: 8px 15px; border-radius: 10px;">00:00:00</div>
-                    <button id="btn-logout" class="btn btn-danger" style="border-radius: 10px; font-weight: bold; box-shadow: 0 4px 15px rgba(220,53,69,0.2);"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
+                    <div class="clock" id="real-time-clock">00:00:00</div>
+                    <button id="btn-logout" class="btn btn-danger" style="border-radius: 10px; font-weight: bold;"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
                 </div>
             </header>
 
-            <div id="teacher-panel" class="panel hidden">
+            <div id="student-home-panel" class="panel">
+                <div class="settings-card" style="max-width: 600px; margin: 0 auto; position: relative; border-top: 4px solid var(--primary-color);">
+                    <div style="position: absolute; top: 20px; right: 20px; background: #dcfce7; color: #059669; padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: 800;">
+                        <i class="fa-solid fa-satellite-dish"></i> Bảo vệ bằng GPS
+                    </div>
+                    <h3 style="margin-bottom: 25px; font-size: 22px; font-weight: 800; color: var(--primary-color); text-align: center;"><i class="fa-solid fa-expand"></i> Cổng Check-in</h3>
+                    <div id="qr-reader"></div>
+                    <button type="button" id="btn-start-scan" class="btn btn-primary" style="width: 100%; margin-bottom: 25px; padding: 14px; font-weight: 800; font-size: 15px;">
+                        <i class="fa-solid fa-camera-viewfinder" style="font-size: 18px; margin-right: 5px;"></i> Bật Camera Quét Mã Lớp
+                    </button>
+                    <form id="form-attendance">
+                        <div class="input-group"><input type="text" id="att-class-code" placeholder="Mã lớp (Quét QR hoặc Nhập tay)" required style="border: 2px dashed #94a3b8; font-weight: 800; text-align: center; font-size: 18px; color: var(--primary-color);"></div>
+                        <div class="input-group"><i class="fa-solid fa-id-card"></i><input type="text" id="att-mssv" placeholder="Nhập Mã số sinh viên (MSSV)" required></div>
+                        <div class="input-group"><i class="fa-solid fa-user"></i><input type="text" id="att-name" placeholder="Nhập Họ và Tên" required></div>
+                        <button type="submit" class="btn btn-success" style="padding: 16px; font-size: 16px; font-weight: 900; letter-spacing: 0.5px; width: 100%;">
+                            <i class="fa-solid fa-paper-plane"></i> Gửi Yêu Cầu Điểm Danh
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="student-history-panel" class="panel">
+                <div class="settings-card" style="max-width: 800px; margin: 0 auto;">
+                    <h3 style="margin-bottom: 25px; font-weight: 800; font-size: 22px;"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử Học tập của tôi</h3>
+                    <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                        <input type="text" id="search-my-mssv" placeholder="Nhập MSSV để tra cứu..." style="flex: 1; padding: 14px 20px; border-radius: var(--radius-md); border: 2px solid var(--border-color); outline: none; font-weight: 600; font-size: 15px;">
+                        <button id="btn-search-my-history" type="button" class="btn btn-primary" style="width: auto; padding: 0 30px;">Tra cứu</button>
+                    </div>
+                    
+                    <div class="streak-box" id="streak-container">
+                        <h2 style="color: #e11d48; margin: 0; font-size: 32px; font-weight: 900; text-transform: uppercase;"><i class="fa-solid fa-fire" style="color: #e11d48; text-shadow: 0 0 15px rgba(225,29,72,0.5);"></i> Chuỗi Chuyên Cần: <span id="student-streak-count">0</span> Ngày</h2>
+                        <p style="color: #9f1239; font-size: 15px; margin-top: 10px; font-weight: 700;">Phong độ cực tốt! Cố gắng duy trì đi học đầy đủ nhé!</p>
+                    </div>
+
+                    <div class="table-container" style="box-shadow: none; border: 1px solid var(--border-color);">
+                        <table class="data-table">
+                            <thead><tr><th>STT</th><th>Mã Lớp</th><th>Thời gian</th><th>Trạng thái</th></tr></thead>
+                            <tbody id="my-history-list"><tr><td colspan="4" style="text-align:center; color: #94a3b8; font-style: italic;">Nhập MSSV để tải dữ liệu</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings-panel" class="panel hidden">
+                <div class="panel-header-actions"><h3><i class="fa-solid fa-gear" style="color:var(--primary-color);"></i> Cài đặt Hệ thống</h3></div>
+                
+                <div class="settings-layout">
+                    <div class="settings-sidebar-inner">
+                        <ul class="settings-tabs">
+                            <li class="active" data-tab="tab-profile"><i class="fa-solid fa-id-badge"></i> Thông tin Cá nhân</li>
+                            <li data-tab="tab-security"><i class="fa-solid fa-shield-halved"></i> Bảo mật Tài khoản</li>
+                            <li data-tab="tab-appearance"><i class="fa-solid fa-palette"></i> Giao diện (Mới)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="settings-content-inner">
+                        <div id="tab-profile" class="setting-section active settings-card">
+                            <h4 style="margin-bottom: 20px; font-size: 18px; font-weight: 800; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Hồ sơ của bạn</h4>
+                            <p style="color: var(--text-muted); margin-bottom: 20px;">Thông tin định danh của bạn trên hệ thống UniCheck.</p>
+                            <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
+                                <img src="" alt="Avatar" class="avatar" id="profile-avatar" style="width: 80px; height: 80px;">
+                                <div>
+                                    <h3 id="profile-email" style="color: var(--text-main); font-weight: 800;">Email</h3>
+                                    <p id="profile-role" style="color: var(--primary-color); font-weight: 700; margin-top: 5px;">Role</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tab-security" class="setting-section settings-card" style="border-top: 4px solid var(--primary-color);">
+                            <h4 style="margin-bottom: 20px; font-size: 18px; font-weight: 800; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;"><i class="fa-solid fa-key"></i> Đổi Mật Khẩu</h4>
+                            <div class="input-group"><i class="fa-solid fa-unlock"></i><input type="password" id="setting-old-pass" placeholder="Nhập mật khẩu hiện tại"></div>
+                            <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="setting-new-pass" placeholder="Thiết lập mật khẩu mới"></div>
+                            <button id="btn-change-pass" class="btn btn-primary" style="width: auto; padding: 12px 30px;"><i class="fa-solid fa-floppy-disk"></i> Cập nhật Mật khẩu</button>
+                        </div>
+
+                        <div id="tab-appearance" class="setting-section settings-card">
+                            <h4 style="margin-bottom: 20px; font-size: 18px; font-weight: 800; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: var(--text-main);"><i class="fa-solid fa-palette"></i> Giao diện Hệ thống</h4>
+                            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Tùy chỉnh màu sắc giao diện để bảo vệ thị lực khi làm việc trong môi trường thiếu sáng.</p>
+                            <div style="display: flex; gap: 15px;">
+                                <button id="btn-theme-light" style="border: 2px solid var(--primary-color); padding: 15px 30px; border-radius: 12px; font-weight: bold; color: var(--primary-color); background: transparent; cursor: pointer; transition: 0.3s;"><i class="fa-solid fa-sun"></i> Sáng (Light)</button>
+                                <button id="btn-theme-dark" style="border: 2px solid var(--border-color); padding: 15px 30px; border-radius: 12px; font-weight: bold; color: var(--text-muted); background: transparent; cursor: pointer; transition: 0.3s;"><i class="fa-solid fa-moon"></i> Tối (Dark)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                    
+                    <div class="settings-content-inner">
+                        <div id="tab-profile" class="setting-section active settings-card">
+                            <h4 style="margin-bottom: 20px; font-size: 18px; font-weight: 800; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Hồ sơ của bạn</h4>
+                            <p style="color: var(--text-muted); margin-bottom: 20px;">Thông tin định danh của bạn trên hệ thống UniCheck.</p>
+                            <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
+                                <img src="" alt="Avatar" class="avatar" id="profile-avatar" style="width: 80px; height: 80px;">
+                                <div>
+                                    <h3 id="profile-email" style="color: var(--text-main); font-weight: 800;">Email</h3>
+                                    <p id="profile-role" style="color: var(--primary-color); font-weight: 700; margin-top: 5px;">Role</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tab-security" class="setting-section settings-card" style="border-top: 4px solid var(--primary-color);">
+                            <h4 style="margin-bottom: 20px; font-size: 18px; font-weight: 800; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;"><i class="fa-solid fa-key"></i> Đổi Mật Khẩu</h4>
+                            <div class="input-group"><i class="fa-solid fa-unlock"></i><input type="password" id="setting-old-pass" placeholder="Nhập mật khẩu hiện tại"></div>
+                            <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="setting-new-pass" placeholder="Thiết lập mật khẩu mới"></div>
+                            <button id="btn-change-pass" class="btn btn-primary" style="width: auto; padding: 12px 30px;"><i class="fa-solid fa-floppy-disk"></i> Cập nhật Mật khẩu</button>
+                        </div>
+
+                        <div id="tab-appearance" class="setting-section settings-card">
+                            <h4 style="margin-bottom: 20px; font-size: 18px; font-weight: 800; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;"><i class="fa-solid fa-moon"></i> Chế độ Hiển thị</h4>
+                            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Tính năng Dark Mode đang được hoàn thiện. Vui lòng sử dụng giao diện sáng mặc định.</p>
+                            <div style="display: flex; gap: 15px;">
+                                <div style="border: 2px solid var(--primary-color); padding: 15px 30px; border-radius: 12px; font-weight: bold; color: var(--primary-color); background: #f8fafc; cursor: pointer;">Sáng (Light)</div>
+                                <div style="border: 2px solid #e2e8f0; padding: 15px 30px; border-radius: 12px; font-weight: bold; color: #94a3b8; cursor: not-allowed; background: #f1f5f9;">Tối (Dark) - Sắp ra mắt</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="teacher-panel" class="panel">
                 <div class="panel-header-actions">
-                    <h3><i class="fa-solid fa-chalkboard-user"></i> Bảng điều khiển điểm danh</h3>
-                    <button id="btn-export-excel" class="btn btn-success" style="font-weight: bold; border-radius: 8px; box-shadow: 0 4px 15px rgba(40,167,69,0.3);"><i class="fa-solid fa-file-excel"></i> Xuất file Báo Cáo</button>
+                    <h3><i class="fa-solid fa-chalkboard-user" style="color:var(--primary-color);"></i> Bảng điều khiển điểm danh</h3>
+                    <button id="btn-export-excel" class="btn btn-success" style="border-radius: 10px;"><i class="fa-solid fa-file-excel"></i> Xuất Báo Cáo Excel</button>
                 </div>
                 <div class="dashboard-widgets">
                     <div class="widget-card"><div class="widget-icon" style="background: #e0e7ff; color: #4f46e5;"><i class="fa-solid fa-users"></i></div><div class="widget-info"><p>Tổng sĩ số</p><h4>40</h4></div></div>
                     <div class="widget-card"><div class="widget-icon" style="background: #dcfce7; color: #10b981;"><i class="fa-solid fa-user-check"></i></div><div class="widget-info"><p>Đã có mặt</p><h4 id="stat-checked-in">0</h4></div></div>
                     <div class="widget-card"><div class="widget-icon" style="background: #fef9c3; color: #eab308;"><i class="fa-solid fa-chart-pie"></i></div><div class="widget-info"><p>Tỷ lệ chuyên cần</p><h4 id="stat-percent">0%</h4></div></div>
                     
-                    <div class="widget-card control-card" style="display: flex; flex-direction: column; align-items: center; border: 2px solid #e2e8f0;">
+                    <div class="widget-card control-card" style="display: flex; flex-direction: column; align-items: center; border: 2px solid var(--primary-color);">
                         <div class="toggle-container" style="text-align: center; width: 100%;">
-                            <span style="font-weight: 800; margin-bottom: 12px; display: block; color: #1e293b;">CỔNG ĐIỂM DANH</span>
+                            <span style="font-weight: 800; margin-bottom: 12px; display: block; color: var(--text-main);">CỔNG ĐIỂM DANH</span>
                             <label class="switch"><input type="checkbox" id="class-toggle"><span class="slider round"></span></label>
                             <span id="class-status-text" class="status-closed" style="display:block; margin-top:8px; font-weight: bold;">Đã Đóng</span>
                         </div>
-                        <input type="text" id="teacher-class-code" placeholder="Nhập mã lớp (VD: DH25PM)" style="margin-top:15px; width: 85%; padding: 10px; text-align: center; border: 2px dashed #cbd5e1; border-radius: 8px; font-weight: bold; color: #334155;">
+                        <input type="text" id="teacher-class-code" placeholder="Nhập mã lớp (VD: DH25PM)" style="margin-top:15px; width: 85%; padding: 12px; text-align: center; border: 2px dashed #cbd5e1; border-radius: 10px; font-weight: 800; color: var(--primary-color); outline: none;">
                         
-                        <div id="teacher-qr-display">
+                        <div id="teacher-qr-display" style="text-align: center;">
                             <img id="qr-image" src="" alt="QR Code">
-                            <div style="background: #1e293b; color: white; padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-top: -15px; position: relative; display: inline-block;">Quét mã bằng Điện thoại</div>
+                            <div style="background: var(--dark-bg); color: white; padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-top: -12px; position: relative; display: inline-block;">Sinh viên quét mã này</div>
                         </div>
                     </div>
                 </div>
-                <div class="table-container" style="border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                <div class="table-container">
                     <table class="data-table">
-                        <thead style="background: #f8fafc;"><tr><th>STT</th><th>Mã Số SV</th><th>Họ và Tên</th><th>Mã Lớp</th><th>Thời gian check-in</th><th>Trạng thái</th></tr></thead>
+                        <thead><tr><th>STT</th><th>Mã Số SV</th><th>Họ và Tên</th><th>Mã Lớp</th><th>Thời gian Check-in</th><th>Trạng thái</th></tr></thead>
                         <tbody id="attendance-list"></tbody>
                     </table>
                 </div>
             </div>
 
-            <div id="billing-panel" class="panel hidden">
-                <div class="panel-header-actions"><h3><i class="fa-solid fa-rocket"></i> Nâng cấp tài khoản Giảng viên</h3></div>
-                <div style="display: flex; justify-content: center; margin-top: 40px; margin-bottom: 40px;">
-                    <div class="vip-card" style="width: 100%; max-width: 450px;">
+            <div id="billing-panel" class="panel">
+                <div class="panel-header-actions"><h3><i class="fa-solid fa-rocket" style="color:#a855f7;"></i> Nâng cấp tài khoản Giảng viên</h3></div>
+                <div style="display: flex; justify-content: center; margin-top: 30px;">
+                    <div class="vip-card">
                         <div class="vip-badge">RECOMMENDED</div>
                         <h4 style="color: #fff; opacity: 0.9; text-transform: uppercase; letter-spacing: 2px; font-weight: 800;">Gói Pro Educator</h4>
                         <h2>99.000đ <span style="font-size: 16px; color: #cbd5e1; font-weight: 500;">/ tháng</span></h2>
@@ -212,143 +424,91 @@
                             <li><i class="fa-solid fa-check-circle"></i> Lưu trữ lịch sử điểm danh vĩnh viễn</li>
                             <li><i class="fa-solid fa-check-circle"></i> Hỗ trợ kỹ thuật ưu tiên 24/7</li>
                         </ul>
-                        <button class="btn" style="background: linear-gradient(90deg, #facc15, #f59e0b); color: #000; width: 100%; font-weight: 900; font-size: 16px; padding: 15px; margin-top: 15px; border-radius: 12px; border: none; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4); text-transform: uppercase; letter-spacing: 1px;" onclick="alert('Chức năng đang được phát triển! Vui lòng quay lại sau.')"><i class="fa-solid fa-bolt"></i> Nâng Cấp Ngay</button>
+                        <button class="btn" style="background: linear-gradient(90deg, #facc15, #f59e0b); color: #000; width: 100%; font-weight: 900; font-size: 16px; padding: 16px; margin-top: 15px; border-radius: 12px; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4); text-transform: uppercase;" onclick="alert('Chức năng thanh toán đang được phát triển! Vui lòng quay lại sau.')"><i class="fa-solid fa-bolt"></i> Tiến Hành Nâng Cấp</button>
                     </div>
                 </div>
             </div>
 
-            <div id="student-panel" class="panel hidden">
-                <div class="glass-card student-attendance-card" style="position: relative; border: 1px solid #e2e8f0;">
-                    <div style="position: absolute; top: 20px; right: 20px; background: linear-gradient(90deg, #10b981, #059669); color: white; padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 4px 10px rgba(16,185,129,0.3);">
-                        <i class="fa-solid fa-satellite-dish"></i> GPS Security Active
-                    </div>
-                    <h3><i class="fa-solid fa-expand"></i> Cổng Điểm Danh</h3>
-                    <div id="qr-reader"></div>
-                    <button type="button" id="btn-start-scan" class="btn btn-primary" style="width: 100%; margin-bottom: 20px; background: linear-gradient(90deg, #6366f1, #4f46e5); border: none; padding: 12px; font-weight: bold; border-radius: 10px; box-shadow: 0 8px 20px rgba(99,102,241,0.3);">
-                        <i class="fa-solid fa-camera-viewfinder" style="font-size: 18px; margin-right: 5px;"></i> Bật Camera Quét QR
-                    </button>
-                    <form id="form-attendance">
-                        <div class="input-group" style="background: #f8fafc;"><input type="text" id="att-class-code" placeholder="Mã lớp (Quét QR hoặc nhập tay)" required style="font-weight: bold; color: #0f172a;"></div>
-                        <div class="input-group"><input type="text" id="att-mssv" placeholder="Nhập Mã số sinh viên" required></div>
-                        <div class="input-group"><input type="text" id="att-name" placeholder="Nhập Họ và Tên" required></div>
-                        <button type="submit" class="btn btn-success btn-block" style="padding: 16px; font-size: 16px; font-weight: 800; border-radius: 12px; box-shadow: 0 8px 25px rgba(40,167,69,0.4);">
-                            <i class="fa-solid fa-paper-plane"></i> Gửi Yêu Cầu Check-in
-                        </button>
-                    </form>
-                </div>
-
-                <div class="glass-card student-attendance-card" style="border: 1px solid #e2e8f0;">
-                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử Học tập</h3>
-                    <div class="input-group" style="display: flex; gap: 10px;">
-                        <input type="text" id="search-my-mssv" placeholder="Nhập MSSV để tra cứu..." style="flex: 1; padding-left: 15px; font-weight: bold;">
-                        <button id="btn-search-my-history" type="button" class="btn btn-primary" style="width: auto; padding: 0 25px; border-radius: 8px; font-weight: bold;">Tra cứu</button>
-                    </div>
-                    
-                    <div class="streak-box" id="streak-container">
-                        <h2 style="color: #e11d48; margin: 0; font-size: 26px; font-weight: 900; text-transform: uppercase;"><i class="fa-solid fa-fire" style="color: #e11d48; text-shadow: 0 0 10px rgba(225,29,72,0.5);"></i> Chuỗi Chuyên Cần: <span id="student-streak-count">0</span> Ngày</h2>
-                        <p style="color: #9f1239; font-size: 14px; margin-top: 8px; font-weight: bold;">Bạn đang giữ phong độ cực tốt! Cố gắng phát huy nhé!</p>
-                    </div>
-
-                    <div class="table-container" style="margin-top: 20px; border-radius: 10px; overflow: hidden;">
-                        <table class="data-table">
-                            <thead style="background: #f1f5f9;"><tr><th>STT</th><th>Mã Lớp</th><th>Thời gian</th><th>Trạng thái</th></tr></thead>
-                            <tbody id="my-history-list"><tr><td colspan="4" style="text-align:center; color: #888; font-style: italic;">Nhập MSSV để hiển thị dữ liệu</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="students-panel" class="panel hidden">
-                <div class="panel-header-actions"><h3><i class="fa-solid fa-users"></i> Quản lý danh sách Sinh viên</h3></div>
-                <div style="display: flex; gap: 25px; align-items: flex-start; flex-wrap: wrap;">
+            <div id="students-panel" class="panel">
+                <div class="panel-header-actions"><h3><i class="fa-solid fa-users" style="color:var(--primary-color);"></i> Quản lý Sinh viên</h3></div>
+                <div style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;">
                     <div class="settings-card" style="flex: 1; min-width: 320px; border-top: 4px solid var(--primary-color);">
-                        <h4 style="margin-bottom: 20px; font-weight: 800;"><i class="fa-solid fa-user-plus"></i> Thêm Sinh viên mới</h4>
-                        <div class="input-group"><input type="email" id="add-stu-email" placeholder="Email sinh viên"></div>
-                        <div class="input-group"><input type="password" id="add-stu-pass" placeholder="Mật khẩu mặc định"></div>
-                        <button id="btn-add-student" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: bold; border-radius: 8px;">Tạo tài khoản</button>
+                        <h4 style="margin-bottom: 20px; font-weight: 800;"><i class="fa-solid fa-user-plus"></i> Cấp tài khoản mới</h4>
+                        <div class="input-group"><i class="fa-solid fa-envelope"></i><input type="email" id="add-stu-email" placeholder="Email sinh viên"></div>
+                        <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="add-stu-pass" placeholder="Mật khẩu mặc định"></div>
+                        <button id="btn-add-student" class="btn btn-primary" style="width: 100%;">Tạo tài khoản</button>
                     </div>
-                    <div class="table-container" style="flex: 2; min-width: 400px; margin-top: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-radius: 15px;">
+                    <div class="table-container" style="flex: 2; min-width: 400px; margin-top: 0;">
                         <table class="data-table">
-                            <thead style="background: #f8fafc;"><tr><th>STT</th><th>Tài khoản Email</th><th>Phân quyền</th></tr></thead>
-                            <tbody id="students-roster-list"><tr><td colspan="3" style="text-align:center;">Đang tải dữ liệu...</td></tr></tbody>
+                            <thead><tr><th>STT</th><th>Tài khoản Email</th><th>Phân quyền</th></tr></thead>
+                            <tbody id="students-roster-list"><tr><td colspan="3" style="text-align:center;">Đang tải...</td></tr></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <div id="reports-panel" class="panel hidden">
+            <div id="reports-panel" class="panel">
                 <div class="panel-header-actions">
-                    <h3><i class="fa-solid fa-chart-area"></i> Phân tích Dữ liệu Điểm danh</h3>
-                    <button id="btn-refresh-chart" class="btn btn-primary" style="border-radius: 8px; font-weight: bold;"><i class="fa-solid fa-rotate"></i> Cập nhật biểu đồ</button>
+                    <h3><i class="fa-solid fa-chart-area" style="color:var(--primary-color);"></i> Phân tích Dữ liệu Điểm danh</h3>
+                    <button id="btn-refresh-chart" class="btn btn-primary"><i class="fa-solid fa-rotate-right"></i> Cập nhật biểu đồ</button>
                 </div>
-                <div class="settings-card" style="padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);"><canvas id="attendanceChart" style="width: 100%; height: 450px;"></canvas></div>
+                <div class="settings-card"><canvas id="attendanceChart" style="width: 100%; height: 450px;"></canvas></div>
             </div>
 
-            <div id="admin-panel" class="panel hidden">
-                <div class="admin-header"><h2 style="color: var(--danger-color); font-weight: 900; letter-spacing: 1px;"><i class="fa-solid fa-shield-halved"></i> TRUNG TÂM KIỂM SOÁT (GOD MODE)</h2></div>
+            <div id="admin-panel" class="panel">
+                <div class="admin-header"><h2 style="color: var(--danger-color); font-weight: 900; letter-spacing: -0.5px;"><i class="fa-solid fa-server"></i> TRUNG TÂM KIỂM SOÁT (GOD MODE)</h2></div>
                 <div class="settings-grid">
-                    <div class="settings-card" style="border: 2px solid var(--primary-color); box-shadow: 0 10px 25px rgba(59,130,246,0.15);">
-                        <h4 class="settings-title" style="color: var(--primary-color); font-weight: 800;"><i class="fa-solid fa-key"></i> Hỗ trợ Khôi phục Mật khẩu</h4>
-                        <div class="input-group"><input type="email" id="admin-recover-email" placeholder="Email tài khoản cần khôi phục"></div>
-                        <div class="input-group"><input type="password" id="admin-recover-pass" placeholder="Mật khẩu mới cấp"></div>
-                        <button id="btn-admin-recover-pass" class="btn btn-primary" style="width:100%; padding: 12px; font-weight: bold; border-radius: 8px;">Thực thi</button>
+                    <div class="settings-card" style="border: 2px solid var(--primary-color); box-shadow: 0 10px 25px rgba(79, 70, 229, 0.15);">
+                        <h4 class="settings-title" style="color: var(--primary-color);"><i class="fa-solid fa-life-ring"></i> Support: Khôi phục Mật khẩu</h4>
+                        <div class="input-group"><i class="fa-solid fa-envelope"></i><input type="email" id="admin-recover-email" placeholder="Email tài khoản cần khôi phục"></div>
+                        <div class="input-group"><i class="fa-solid fa-key"></i><input type="password" id="admin-recover-pass" placeholder="Mật khẩu mới cấp"></div>
+                        <button id="btn-admin-recover-pass" class="btn btn-primary" style="width:100%;">Thực thi Lệnh</button>
                     </div>
                     <div class="settings-card danger-zone">
-                        <h4 class="settings-title" style="color: var(--danger-color); font-weight: 900;"><i class="fa-solid fa-radiation"></i> PROTOCOL: XÓA DỮ LIỆU</h4>
-                        <p style="font-size: 13px; color: #64748b; margin-bottom: 20px; font-weight: 500;">Hành động này sẽ thanh trừng toàn bộ lịch sử điểm danh trên máy chủ đám mây. Không thể hoàn tác!</p>
-                        <button id="btn-reset-data" class="btn btn-danger" style="width: 100%; padding: 15px; font-weight: 900; font-size: 15px; border-radius: 8px; text-transform: uppercase;"><i class="fa-solid fa-skull-crossbones"></i> Khởi Động Quá Trình Reset</button>
+                        <h4 class="settings-title" style="color: var(--danger-color);"><i class="fa-solid fa-radiation"></i> PROTOCOL: XÓA DỮ LIỆU LỚP</h4>
+                        <p style="font-size: 14px; color: #64748b; margin-bottom: 20px; font-weight: 500;">Hành động này sẽ thanh trừng toàn bộ lịch sử điểm danh trên máy chủ đám mây. Tuyệt đối không thể hoàn tác!</p>
+                        <button id="btn-reset-data" class="btn btn-danger" style="width: 100%; padding: 16px; text-transform: uppercase;"><i class="fa-solid fa-skull-crossbones"></i> Khởi Động Quá Trình Reset</button>
                     </div>
                 </div>
                 
-                <h3 style="margin-top: 35px; margin-bottom: 20px; font-weight: 800;"><i class="fa-solid fa-users-gear"></i> Quản Trị Hệ Sinh Thái Tài Khoản (<span id="admin-total-users" style="color: var(--primary-color);">0</span>)</h3>
-                <div class="table-container" style="box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-radius: 15px;">
+                <h3 style="margin-top: 40px; margin-bottom: 20px; font-weight: 800; color: var(--text-main);"><i class="fa-solid fa-users-gear"></i> Quản Trị Hệ Sinh Thái Tài Khoản (<span id="admin-total-users" style="color: var(--primary-color);">0</span>)</h3>
+                <div class="table-container">
                     <table class="data-table">
-                        <thead style="background: #f8fafc;"><tr><th>STT</th><th>Tài khoản Email</th><th>Phân quyền</th><th>Hành động</th></tr></thead>
-                        <tbody id="admin-users-list"><tr><td colspan="4" style="text-align:center;">Đang quét cơ sở dữ liệu...</td></tr></tbody>
+                        <thead><tr><th>STT</th><th>Tài khoản Email</th><th>Phân quyền</th><th>Hành động</th></tr></thead>
+                        <tbody id="admin-users-list"><tr><td colspan="4" style="text-align:center;">Đang tải...</td></tr></tbody>
                     </table>
                 </div>
 
-                <h3 style="margin-top: 45px; margin-bottom: 20px; color: #334155; font-weight: 800;"><i class="fa-solid fa-terminal"></i> Terminal: Nhật ký Hoạt động (Audit Logs)</h3>
-                <div class="table-container" style="border: 2px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
-                    <table class="data-table" style="font-size: 13px; font-family: monospace;">
-                        <thead style="background: #1e293b; color: white;"><tr><th>[TIMESTAMP]</th><th>[USER_IDENTIFIER]</th><th>[ACTION_EXECUTED]</th></tr></thead>
-                        <tbody id="admin-audit-list"><tr><td colspan="3" style="text-align:center; padding: 20px;">Fetching logs...</td></tr></tbody>
+                <h3 style="margin-top: 40px; margin-bottom: 20px; font-weight: 800; color: var(--text-main);"><i class="fa-solid fa-terminal"></i> Nhật ký Hoạt động Máy chủ (Audit Logs)</h3>
+                <div class="table-container" style="border: 2px solid #1e293b; background: #0f172a; padding: 0;">
+                    <table class="data-table" style="font-family: monospace; border: none;">
+                        <thead style="background: #1e293b; color: white;"><tr><th style="border:none; color:#94a3b8;">[TIMESTAMP]</th><th style="border:none; color:#94a3b8;">[USER_IDENTIFIER]</th><th style="border:none; color:#94a3b8;">[ACTION_EXECUTED]</th></tr></thead>
+                        <tbody id="admin-audit-list"><tr><td colspan="3" style="text-align:center; color: #10b981; padding: 30px;">Fetching server logs...</td></tr></tbody>
                     </table>
                 </div>
             </div>
 
-            <div id="history-panel" class="panel hidden">
-                <div class="panel-header-actions"><h3><i class="fa-solid fa-magnifying-glass-chart"></i> Truy xuất Dữ liệu Tổng hợp</h3></div>
-                <div class="settings-card" style="margin-bottom: 25px; display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; background: #f8fafc; border: 1px solid #e2e8f0;">
+            <div id="history-panel" class="panel">
+                <div class="panel-header-actions"><h3><i class="fa-solid fa-magnifying-glass-chart" style="color:var(--primary-color);"></i> Truy xuất Dữ liệu Tổng hợp</h3></div>
+                <div class="settings-card" style="margin-bottom: 24px; display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; background: #f8fafc;">
                     <div class="input-group" style="margin-bottom: 0; flex: 1; min-width: 220px;">
-                        <label style="font-size: 12px; font-weight: 800; color: #64748b; margin-bottom: 8px; display: block; text-transform: uppercase;">Lọc theo Ngày</label>
-                        <input type="date" id="filter-date" style="padding-left: 15px; border-radius: 8px;">
+                        <label style="font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; display: block; text-transform: uppercase;">Lọc theo Ngày</label>
+                        <input type="date" id="filter-date" style="padding-left: 15px;">
                     </div>
                     <div class="input-group" style="margin-bottom: 0; flex: 1; min-width: 220px;">
-                        <label style="font-size: 12px; font-weight: 800; color: #64748b; margin-bottom: 8px; display: block; text-transform: uppercase;">Lọc theo Mã Lớp</label>
-                        <input type="text" id="filter-class" placeholder="VD: DH25PM" style="padding-left: 15px; border-radius: 8px;">
+                        <label style="font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; display: block; text-transform: uppercase;">Lọc theo Mã Lớp</label>
+                        <input type="text" id="filter-class" placeholder="VD: DH25PM" style="padding-left: 15px;">
                     </div>
-                    <button id="btn-filter-history" class="btn btn-primary" style="height: 48px; width: auto; padding: 0 30px; border-radius: 8px; font-weight: bold;"><i class="fa-solid fa-filter"></i> Áp dụng Bộ lọc</button>
+                    <button id="btn-filter-history" class="btn btn-primary" style="height: 50px; width: auto; padding: 0 30px;"><i class="fa-solid fa-filter"></i> Áp dụng Bộ lọc</button>
                 </div>
-                <div class="table-container" style="box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-radius: 15px;">
+                <div class="table-container">
                     <table class="data-table">
-                        <thead style="background: #f8fafc;"><tr><th>STT</th><th>Mã Số SV</th><th>Họ Tên</th><th>Mã Lớp</th><th>Thời gian Check-in</th><th>Trạng thái</th></tr></thead>
+                        <thead><tr><th>STT</th><th>Mã Số SV</th><th>Họ Tên</th><th>Mã Lớp</th><th>Thời gian Check-in</th><th>Trạng thái</th></tr></thead>
                         <tbody id="history-list"><tr><td colspan="6" style="text-align:center; padding: 40px; color: #94a3b8; font-style: italic;"><i class="fa-solid fa-database" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>Sử dụng bộ lọc để truy xuất dữ liệu</td></tr></tbody>
                     </table>
                 </div>
             </div>
 
-            <div id="settings-panel" class="panel hidden">
-                <div class="panel-header-actions"><h3><i class="fa-solid fa-shield-halved"></i> Bảo mật Tài khoản</h3></div>
-                <div class="settings-grid">
-                    <div class="settings-card" style="border-top: 4px solid var(--primary-color);">
-                        <h4 class="settings-title" style="font-weight: 800;"><i class="fa-solid fa-key"></i> Thay Đổi Mật Khẩu Truy Cập</h4>
-                        <div class="input-group"><input type="password" id="setting-old-pass" placeholder="Nhập mật khẩu hiện tại"></div>
-                        <div class="input-group"><input type="password" id="setting-new-pass" placeholder="Thiết lập mật khẩu mới"></div>
-                        <button id="btn-change-pass" class="btn btn-primary" style="padding: 12px; border-radius: 8px; font-weight: bold;"><i class="fa-solid fa-floppy-disk"></i> Lưu Thay Đổi</button>
-                    </div>
-                </div>
-            </div>
         </main>
     </section>
 
