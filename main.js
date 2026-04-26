@@ -55,16 +55,20 @@ setInterval(() => {
 }, 1000);
 
 // ================= XỬ LÝ GIAO DIỆN AUTH =================
-// --- ĐIỀU HƯỚNG ---
-window.toggleAuth = (type) => {
+window.toggleAuth = function(formType = 'login') {
     document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-    
-    // Đã fix lỗi tìm sai ID của Admin
-    const targetId = (type === 'admin') ? 'admin-login-form' : type + '-form';
-    
+    const targetId = (formType === 'admin') ? 'admin-login-form' : formType + '-form';
     const target = document.getElementById(targetId);
     if(target) target.classList.add('active');
-};
+}
+
+document.querySelectorAll('.toggle-password').forEach(icon => {
+    icon.addEventListener('click', function() {
+        const input = this.previousElementSibling;
+        input.type = input.type === 'password' ? 'text' : 'password';
+        this.classList.toggle('fa-eye'); this.classList.toggle('fa-eye-slash');
+    });
+});
 
 // ================= XÁC THỰC (ĐĂNG KÝ / ĐĂNG NHẬP) =================
 document.getElementById('form-register-submit')?.addEventListener('submit', async function(e) {
@@ -266,9 +270,9 @@ function initTeacherRealtime(lecturerId) {
             tbody.appendChild(tr);
         });
     });
-} // <--- QUAN TRỌNG: CÁI DẤU NGOẶC NÀY ĐÃ ĐƯỢC PHỤC HỒI!
+} 
 
-// ================= SINH VIÊN QUÉT QR =================
+// ================= SINH VIÊN QUÉT QR CỰC XỊN =================
 const btnStartScan = document.getElementById('btn-start-scan'); 
 const qrReaderDiv = document.getElementById('qr-reader'); 
 const attClassCodeInput = document.getElementById('att-class-code'); 
@@ -326,7 +330,7 @@ document.getElementById('form-attendance')?.addEventListener('submit', function(
 // ================= SINH VIÊN XEM LỊCH SỬ STREAK =================
 document.getElementById('btn-search-my-history')?.addEventListener('click', async () => {
     const mssv = document.getElementById('search-my-mssv').value.trim().toUpperCase(); 
-    if(!mssv) return alert('Vui lòng nhập MSSV!');
+    if(!mssv) return showToast('Vui lòng nhập MSSV!', 'error');
     
     const tbody = document.getElementById('my-history-list'); 
     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Đang truy xuất máy chủ...</td></tr>'; 
@@ -452,7 +456,7 @@ document.getElementById('btn-change-pass')?.addEventListener('click', async () =
     } catch(e){} 
 });
 
-// Biểu đồ (Lọc theo Giảng viên nếu là Giảng viên)
+// ================= BIỂU ĐỒ (LỌC THEO GIẢNG VIÊN) =================
 let attendanceChartInstance = null;
 async function renderChart() {
     try { 
@@ -480,7 +484,7 @@ async function renderChart() {
 }
 document.getElementById('btn-refresh-chart')?.addEventListener('click', renderChart);
 
-// Lịch sử tổng hợp (Lọc theo Giảng viên nếu là Giảng viên)
+// ================= TRA CỨU LỊCH SỬ TỔNG HỢP & FILTER =================
 document.getElementById('btn-filter-history')?.addEventListener('click', async () => { 
     const dateInput = document.getElementById('filter-date').value; 
     const classInput = document.getElementById('filter-class').value.trim().toLowerCase(); 
@@ -499,9 +503,7 @@ document.getElementById('btn-filter-history')?.addEventListener('click', async (
         docsArray.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
 
         docsArray.forEach((item) => { 
-            // Lọc: Giảng viên thì chỉ thấy học sinh của mình
             if (user.role === 'teacher' && item.lecturerId !== user.id) return;
-
             if ((!searchDate || item.time.includes(searchDate)) && (!classInput || item.classCode.toLowerCase().includes(classInput))) { 
                 hasData = true; 
                 const tr = document.createElement('tr'); 
@@ -513,37 +515,46 @@ document.getElementById('btn-filter-history')?.addEventListener('click', async (
     } catch (error) {} 
 });
 
+// ================= XUẤT EXCEL (ĐÃ SỬA LỖI BẰNG JS SORT) =================
 document.getElementById('btn-export-excel')?.addEventListener('click', async () => { 
     try { 
         showToast('Đang xuất Excel...', 'success'); 
         const user = JSON.parse(localStorage.getItem('currentUser'));
-        let q = query(attendanceCollection, orderBy("timestamp", "desc"));
-        if(user && user.role === 'teacher') q = query(attendanceCollection, where("lecturerId", "==", user.id), orderBy("timestamp", "desc"));
+        
+        // Không dùng orderBy ở query để tránh lỗi Index Firebase, gắp hết data về rồi JS tự sắp xếp.
+        let q = attendanceCollection;
+        if(user && user.role === 'teacher') q = query(attendanceCollection, where("lecturerId", "==", user.id));
 
         const snap = await getDocs(q); 
-        let csvContent = "\uFEFFSTT,MSSV,Họ Tên,Mã Lớp,Thời gian Check-in,Trạng thái\n"; let index = 1; 
-        snap.forEach((docSnap) => { 
-            const item = docSnap.data(); 
+        if(snap.empty) return showToast('Không có dữ liệu để xuất!', 'error');
+
+        // Bỏ data vào mảng để sort thủ công
+        let docsArray = [];
+        snap.forEach(docSnap => docsArray.push(docSnap.data()));
+        docsArray.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
+
+        let csvContent = "\uFEFFSTT,MSSV,Họ Tên,Mã Lớp,Thời gian Check-in,Trạng thái\n"; 
+        let index = 1; 
+        
+        docsArray.forEach((item) => { 
             csvContent += `${index++},${item.mssv},${item.name.replace(/,/g, " ")},${item.classCode},${item.time},Hợp lệ\n`; 
         }); 
+        
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); 
         const link = document.createElement("a"); link.href = URL.createObjectURL(blob); 
-        link.download = `UniCheck_Report.csv`; link.click(); writeLog(`Xuất Excel`); 
-    } catch (error) { } 
+        link.download = `UniCheck_Report_${new Date().getTime()}.csv`; 
+        document.body.appendChild(link);
+        link.click(); 
+        document.body.removeChild(link);
+        writeLog(`Xuất Excel file Báo cáo`); 
+    } catch (error) { 
+        console.error(error);
+        showToast('Lỗi khi xuất file!', 'error');
+    } 
 });
 
 // ================= GIAO DIỆN SÁNG TỐI =================
 const body = document.body;
-const savedTheme = localStorage.getItem('unicheckTheme');
-if (savedTheme === 'dark') enableDarkMode();
-
-document.getElementById('btn-theme-light')?.addEventListener('click', () => {
-    disableDarkMode(); localStorage.setItem('unicheckTheme', 'light');
-});
-
-document.getElementById('btn-theme-dark')?.addEventListener('click', () => {
-    enableDarkMode(); localStorage.setItem('unicheckTheme', 'dark');
-});
 
 function enableDarkMode() {
     body.classList.add('dark-theme');
@@ -564,3 +575,11 @@ function disableDarkMode() {
         btnDark.style.borderColor = 'var(--border-color)'; btnDark.style.color = 'var(--text-muted)';
     }
 }
+
+document.getElementById('btn-theme-light')?.addEventListener('click', () => {
+    disableDarkMode(); localStorage.setItem('unicheckTheme', 'light');
+});
+
+document.getElementById('btn-theme-dark')?.addEventListener('click', () => {
+    enableDarkMode(); localStorage.setItem('unicheckTheme', 'dark');
+});
