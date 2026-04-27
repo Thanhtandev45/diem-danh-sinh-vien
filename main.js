@@ -272,7 +272,7 @@ function initTeacherRealtime(lecturerId) {
     });
 } 
 
-// ================= SINH VIÊN QUÉT QR CỰC XỊN =================
+// ================= SINH VIÊN QUÉT QR =================
 const btnStartScan = document.getElementById('btn-start-scan'); 
 const qrReaderDiv = document.getElementById('qr-reader'); 
 const attClassCodeInput = document.getElementById('att-class-code'); 
@@ -515,7 +515,7 @@ document.getElementById('btn-filter-history')?.addEventListener('click', async (
     } catch (error) {} 
 });
 
-// ================= XUẤT EXCEL (ĐÃ SỬA LỖI BẰNG JS SORT) =================
+// ================= XUẤT EXCEL  =================
 document.getElementById('btn-export-excel')?.addEventListener('click', async () => { 
     try { 
         showToast('Đang xuất Excel...', 'success'); 
